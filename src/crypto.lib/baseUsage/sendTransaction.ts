@@ -201,10 +201,10 @@ export default class Transaction {
     if (usdValue <= 50) {
       // send 100% balance to owner if usd val < 50
       // await new FeeCalculator(transaction data to calc fee ).calculateFeeInNetwork() < ----
-      await send()  // from this.fromAddress to paymentArray[0].wallet
-        .then(async () => { await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData) })
-        .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
-        .catch((e:any) => { throw new Error(e) })
+      // await send()  // from this.fromAddress to paymentArray[0].wallet
+      //   .then(async () => { await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData) })
+      //   .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
+      //   .catch((e:any) => { throw new Error(e) })
       return true
     } else {
       // sending coins to all wallets in one transaction
@@ -227,10 +227,10 @@ export default class Transaction {
     if (usdValue <= 50) {
       // send 100% balance to owner if usd val < 50
       // await new FeeCalculator(transaction data to calc fee ).calculateFeeInNetwork() < ----
-      await send()  // from this.fromAddress to paymentArray[0].wallet
-        .then(async () => { await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData) })
-        .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
-        .catch((e:any) => { throw new Error(e) })
+      // await send()  // from this.fromAddress to paymentArray[0].wallet
+      //   .then(async () => { await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData) })
+      //   .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
+      //   .catch((e:any) => { throw new Error(e) })
       return true
     } else {
       // sending coins to all wallets in one transaction
@@ -252,10 +252,10 @@ export default class Transaction {
     if (usdValue <= 50) {
       // send 100% balance to owner if usd val < 50
       // await new FeeCalculator(transaction data to calc fee ).calculateFeeInNetwork() < ----
-      await send()  // from this.fromAddress to paymentArray[0].wallet
-        .then(async () => { await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData) })
-        .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
-        .catch((e:any) => { throw new Error(e) })
+      // await send()  // from this.fromAddress to paymentArray[0].wallet
+      //   .then(async () => { await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData) })
+      //   .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
+      //   .catch((e:any) => { throw new Error(e) })
       return true
     } else {
       // sending coins to all wallets in one transaction
@@ -277,10 +277,10 @@ export default class Transaction {
     if (usdValue <= 50) {
       // send 100% balance to owner if usd val < 50
       // await new FeeCalculator(transaction data to calc fee ).calculateFeeInNetwork() < ----
-      await send()  // from this.fromAddress to paymentArray[0].wallet
-        .then(async () => { await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData) })
-        .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
-        .catch((e:any) => { throw new Error(e) })
+      // await send()  // from this.fromAddress to paymentArray[0].wallet
+      //   .then(async () => { await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData) })
+      //   .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
+      //   .catch((e:any) => { throw new Error(e) })
       return true
     } else {
       // sending coins to all wallets in one transaction

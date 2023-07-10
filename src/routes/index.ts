@@ -4,7 +4,7 @@ const router = express.Router()
 
 // generate address by coinName for cur userId
 router.get(
-	'/wallet/generate/:coinName/',
+	'/wallet/generate/:coinName/:userId/',
 	cryptoController.generateWalletAddress)
 
 // check address for isValid

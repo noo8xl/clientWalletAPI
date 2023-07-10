@@ -1,14 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-import cryptoService from './crypto.service';
 import { TSX_DATA } from '../interfaces/transactionData.interface';
 import { GetDomainNameFromOrigin } from './lib.helper/getDomainName.helper';
+import CryptoService from "./crypto.service";
 
 class CryptoController {
 
 	async generateWalletAddress(req: Request, res: Response, next: NextFunction) {
 		const coinName: string = req.params.coinName.toLowerCase().replace('-', '/')
+		const userId: string = req.params.userId
 		try {
-			return res.status(200).json(await cryptoService.generateWalletAddressByCoinName(coinName))
+			return res.status(200).json(await new CryptoService(coinName, userId).generateWalletAddressByCoinName())
 		} catch (e) {
 			next(e)
 		}
@@ -18,7 +19,7 @@ class CryptoController {
 		const coinName: string = req.params.coinName.toLowerCase().replace('-', '/')
 		const address: string = req.params.address
 		try {
-			return res.status(200).json(await cryptoService.checkAddress(coinName, address))
+			return res.status(200).json(await new CryptoService(coinName, address).checkAddress())
 		} catch (e) {
 			next(e)
 		}
@@ -28,7 +29,7 @@ class CryptoController {
 		const coinName: string = req.params.coinName.toLowerCase().replace('-', '/')
 		const address: string = req.params.address
 		try {
-			return res.status(200).json(await cryptoService.getBalance(coinName, address))
+			return res.status(200).json(await new CryptoService(coinName, address).getBalance())
 		} catch (e) {
 			next(e)
 		}
@@ -49,7 +50,7 @@ class CryptoController {
 		}
 
 		try {
-			return res.status(200).json(await cryptoService.sendManualTransaction(tsxData))
+			return res.status(200).json(await new CryptoService(tsxData.coinName).sendManualTransaction(tsxData))
 		} catch (e) {
 			next(e)
 		}

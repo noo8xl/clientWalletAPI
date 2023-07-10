@@ -74,8 +74,6 @@ if (cluster.isMaster) {
 }
 
 
-
-
 // auto payment
 // + wallet generator
 // + seed phrase generator

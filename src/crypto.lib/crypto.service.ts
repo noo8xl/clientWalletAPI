@@ -4,6 +4,7 @@ import * as bip32 from 'bip32'
 import * as bip39 from 'bip39'
 import * as bitcoin from 'bitcoinjs-lib'
 import bchaddr from 'bchaddrjs'
+import database from './databaseQuery.service'
 import * as ethWallet from 'ethereumjs-wallet'
 import * as web3 from '@solana/web3.js'
 import crypto from 'crypto'
@@ -14,23 +15,30 @@ import ApiError from "../exceptions/apiError";
 import Balance from './baseUsage/balance_checker'
 import { TSX_DATA } from "../interfaces/transactionData.interface";
 import Transaction from "./baseUsage/sendTransaction";
+import {DEPOSIT_WALLET_PARAMS} from "../interfaces/depositWallet.interface";
 
 
 class CryptoService {
+  coinName: string
+  userId?: string
+  address?: string
 
-  async generateWalletAddressByCoinName(coinName: string): Promise<WALLET_DATA | WALLET_DATA[]> {
+  constructor(coinName: string, userId?: string, address?: string) {
+    this.coinName = coinName
+    if(userId) this.userId = userId
+    if(address) this.address = address
+  }
 
-    switch (coinName) {
+  async generateWalletAddressByCoinName(): Promise<WALLET_DATA | WALLET_DATA[]> {
+
+    switch (this.coinName) {
       case coinList[0]:
-        return this.GenWalletInBitcoinNetwork()
       case coinList[1]:
         return this.GenWalletInBitcoinNetwork()
       case coinList[2]:
-        return this.GenWalletInEthereumNetwork()
       case coinList[3]:
         return this.GenWalletInEthereumNetwork()
       case coinList[4]:
-        return this.GenWalletInTronNetwork()
       case coinList[5]:
         return this.GenWalletInTronNetwork()
       case coinList[6]:
@@ -38,17 +46,18 @@ class CryptoService {
       case coinList[7]:
         return this.GenWalletInTheOpenNetwork()
       default:
-        throw await ApiError.BadRequest()
+        throw await ApiError.BadRequest('unknown coin name at address gen')
     }
   }
 
-  async checkAddress(coinName: string, address: string): Promise<boolean> {
-
+  async checkAddress(): Promise<boolean> {
+    // this.coinName
+    // this.address
     return true
   }
 
-  async getBalance(coinName: string, address: string): Promise<number> {
-    return await new Balance(coinName, address).CheckBalance()
+  async getBalance(): Promise<number> {
+    return await new Balance(this.coinName, this.address).CheckBalance()
   }
 
   async sendManualTransaction(txsInfo: TSX_DATA): Promise<boolean> {
@@ -107,36 +116,44 @@ class CryptoService {
   // .from(utxo)
   // .to('1Gokm82v6DmtwKEB8AiVhm82hyFSsEvBDK', 15000)
   // .sign(privateKey);
-
-    return
-    
+  //
+  //   return
+  //
 
     // https://www.npmjs.com/package/bchaddrjs
-    // const bchAddress = bchaddr.toCashAddress(btcAddress).split(':')[1]
+    const bchAddress = bchaddr.toCashAddress(btcAddress).split(':')[1]
 
-  //   const btcObject: WALLET_DATA = {
-  //     coinName: 'BTC',
-  //     address: btcAddress,
-  //     key: node.toWIF(),
-  //     seedPhrase: mnemonic
-  //   }
+    const btcObject: WALLET_DATA = {
+      coinName: 'BTC',
+      address: btcAddress,
+      privateKey: node.toWIF(),
+      seed: mnemonic,
+      publicKey: '',
+    }
 
-  //   const bchObject: WALLET_DATA = {
-  //     coinName: 'BCH',
-  //     address: bchAddress,
-  //     key: node.toWIF(),
-  //     seedPhrase: mnemonic
-  //   }
+    const bchObject: WALLET_DATA = {
+      coinName: 'BCH',
+      address: bchAddress,
+      privateKey: node.toWIF(),
+      seed: mnemonic,
+      publicKey: '',
+    }
 
-  //   console.log(`
-  //     Generated wallet: 
-  //     - btc address : ${btcAddress},
-  //     - bch address : ${bchAddress}
-  //     - key : ${node.toWIF()},
-  //     - mnemonic : ${mnemonic}
-  // `);
+    console.log(`
+      Generated wallet: 
+      - btc address : ${btcAddress},
+      - bch address : ${bchAddress}
+      - key : ${node.toWIF()},
+      - mnemonic : ${mnemonic}
+    `);
 
-  //  return [ btcObject, bchObject ]
+    await this.saveDepositData(btcObject, this.userId);
+    await this.saveDepositData(btcObject, this.userId);
+
+    if(this.coinName === 'btc') return btcAddress
+    if(this.coinName === 'bch') return bchAddress
+
+    return;
   }
 
   protected async GenWalletInEthereumNetwork(): Promise<WALLET_DATA[]> {
@@ -254,6 +271,26 @@ class CryptoService {
   return obj
   }
 
+  private async saveDepositData(
+    coinData: WALLET_DATA,
+    userId: string): Promise<void> {
+
+    const expiredDate: number = (new Date().getTime()) + (1000 * 60 * 30)
+
+
+    const objForDatabase: DEPOSIT_WALLET_PARAMS = {
+      coinName: coinData.coinName,
+      address: coinData.address,
+      publicKey: coinData.publicKey,
+      privateKey: coinData.privateKey,
+      expiredDate,
+      userId
+    }
+
+    await database.saveDepositWallet(objForDatabase)
+    return;
+  }
+
 }
 
-export default new CryptoService()
+export default CryptoService;
