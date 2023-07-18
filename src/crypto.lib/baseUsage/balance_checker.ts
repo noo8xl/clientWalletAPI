@@ -21,13 +21,12 @@ export default class Balance {
 
     switch (this.coinName) {
       case coinList[0]:
+      // case coinList[1]:// can't check bch balance. should fix it later <------------------------------------------------
         return this.getBtcNetworkBalance()
       case coinList[2]:
-        return this.getEthereumNetworkBalance()
       case coinList[3]:
         return this.getEthereumNetworkBalance()
       case coinList[4]:
-        return this.getTronNetworkBalance()
       case coinList[5]:
         return this.getTronNetworkBalance()
       case coinList[6]:
@@ -77,8 +76,8 @@ export default class Balance {
 
   protected async getTronNetworkBalance(): Promise<number> {
 
-    const reqUrl = `https://apilist.tronscan.org/api/account?address=${this.address}`
-    const payload = { "address": this.address }
+    const reqUrl: string = `https://apilist.tronscan.org/api/account?address=${this.address}`
+    const payload: any = { "address": this.address }
     const coinData: any = await axios({
       method: 'GET',
       url: reqUrl,

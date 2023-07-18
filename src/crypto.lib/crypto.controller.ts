@@ -9,7 +9,8 @@ class CryptoController {
 		const coinName: string = req.params.coinName.toLowerCase().replace('-', '/')
 		const userId: string = req.params.userId
 		try {
-			return res.status(200).json(await new CryptoService(coinName, userId).generateWalletAddressByCoinName())
+			const result: any = await new CryptoService(coinName, userId).generateWalletAddressByCoinName()
+			return res.status(200).json(result)
 		} catch (e) {
 			next(e)
 		}

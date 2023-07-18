@@ -44,22 +44,35 @@ async function Connection() {
 }
 
 
-if (cluster.isMaster) {
-  console.log(`Number of CPUs is ${cpuNum}`);
-  console.log(`Master ${process.pid} is running`);
+// if (cluster.isMaster) {
+//   console.log(`Number of CPUs is ${cpuNum}`);
+//   console.log(`Master ${process.pid} is running`);
 
-  // Fork workers.
-  for (let i = 0; i < cpuNum; i++) {
-    cluster.fork();
-  }
+//   // Fork workers.
+//   for (let i = 0; i < cpuNum; i++) {
+//     cluster.fork();
+//   }
 
-  cluster.on("exit", (worker, code, signal) => {
-    console.log(`worker ${worker.process.pid} died`);
-    console.log("Let's fork another worker!");
-    cluster.fork();
-  });
-} else {
-  const server = http.createServer(app)
+//   cluster.on("exit", (worker, code, signal) => {
+//     console.log(`worker ${worker.process.pid} died`);
+//     console.log("Let's fork another worker!");
+//     cluster.fork();
+//   });
+// } else {
+//   const server = http.createServer(app)
+//   const PORT: number = Number(process.env.PORT)
+//   console.log(`Worker ${process.pid} started`);
+  
+//   server.listen(PORT, async () => {
+//     try {
+//       console.clear()
+//       await Connection()
+//     } catch (e: any) {
+//       return console.error(new Error(e))
+//     }
+//   })
+// }
+const server = http.createServer(app)
   const PORT: number = Number(process.env.PORT)
   console.log(`Worker ${process.pid} started`);
   
@@ -71,7 +84,6 @@ if (cluster.isMaster) {
       return console.error(new Error(e))
     }
   })
-}
 
 
 // auto payment

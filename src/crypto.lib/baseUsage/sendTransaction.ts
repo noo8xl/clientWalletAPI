@@ -1,4 +1,3 @@
-
 import axios from 'axios'
 import { OWNER_WALLET_LIST } from '../lib.helper/ownerWalletList'
 import { PAYMENT_WALLET_LIST } from '../lib.helper/paymentWallets'
@@ -84,11 +83,9 @@ export default class Transaction {
       case coinList[0]:
         return await this.SendBitcoinTransaction(transactionDetails)
       case coinList[2]:
-        return this.SendEthereumTransaction(transactionDetails)
       case coinList[3]:
         return this.SendEthereumTransaction(transactionDetails)
       case coinList[4]:
-        return this.SendTronTransaction(transactionDetails)
       case coinList[5]:
         return this.SendTronTransaction(transactionDetails)
       case coinList[6]:
@@ -96,7 +93,7 @@ export default class Transaction {
       case coinList[7]:
         return this.SendTheOpenNetworkTransaction(transactionDetails)
       default:
-        throw await ApiError.BadRequest()
+        throw await ApiError.BadRequest(`can't send transaction in unknown network or unavailable coin.`)
     }
   }
 
@@ -130,6 +127,8 @@ export default class Transaction {
     const preStaffSum: number = (this.balance / 100) * staffFeeParams.paymentFee
     let recruiterSum: number = 0
 
+    staffSum = (this.balance / 100) * staffFeeParams.paymentFee
+
     if (hasOwnRecruiter !== null) {
       const recruiterWalletData: RECRUITER_WALLET = await RecruiterWallet.
         findOne({ recruiterId: hasOwnRecruiter.recruiterId, coinName: this.coinName })
@@ -139,8 +138,6 @@ export default class Transaction {
       recruiterSum = (preStaffSum / 100) * hasOwnRecruiter.recruiterFee
       staffSum = preStaffSum - recruiterSum
     } 
-
-    staffSum = (this.balance / 100) * staffFeeParams.paymentFee
 
     dataForTransaction.staffSum = staffSum
     dataForTransaction.recruiterSum = staffFeeParams.paymentFee
@@ -161,7 +158,7 @@ export default class Transaction {
 
   // get string name for api usage to know USD value of current coin < -------------------------
   private async getCoinApiName(): Promise<string> {
-    for (let i = 0; i <= availableCoins.length - 1; i++) {
+    for (let i: number = 0; i <= availableCoins.length - 1; i++) {
       if (availableCoins[i].coinName === this.coinName) {
         return availableCoins[i].coinApiName
       }
@@ -172,7 +169,7 @@ export default class Transaction {
 
   // get owner or payment wallet address by coin name << -------------------------
   private async getWallet(array: any): Promise<string> {
-    for (let i = 0; i < array.length -1; i++) {
+    for (let i: number = 0; i < array.length -1; i++) {
       if(array[i].coinName === this.coinName) {
         return array[i].mainAddress
       }
@@ -182,13 +179,17 @@ export default class Transaction {
   // get USD value of current coin <<----------------
   private async getRateData(): Promise<any> {
     const coinNameForUrl: string = await this.getCoinApiName()
-    const getRateUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinNameForUrl}`
-    return await axios(getRateUrl)
+    const getRateUrl: string = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinNameForUrl}`
+    await axios(getRateUrl)
+
+    return 'some';
   }
 
   // ================================ main transaction handlers below =========================================== //
 
   private async SendBitcoinTransaction(paymentArray: PAYMENT_OBJ[]): Promise<boolean> {
+    // https://blog.logrocket.com/sending-bitcoin-with-javascript/
+
     const rate: any = await this.getRateData()
     console.log(rate.data[0].current_price);
   
@@ -305,9 +306,8 @@ export default class Transaction {
 
     // Create Client
     const client = new TonClient({
-      // Mainnet: https://toncenter.com/api/v2/jsonRPC
-      // Testnet: https://testnet.toncenter.com/api/v2/jsonRPC
-      endpoint: 'https://toncenter.com/api/v2/jsonRPC',
+      endpoint: 'https://testnet.toncenter.com/api/v2/jsonRPC', // <---- test net
+      // endpoint: 'https://toncenter.com/api/v2/jsonRPC', // <---- MAIN net
     });
     
     let workchain = 0; // Usually you need a workchain 0
