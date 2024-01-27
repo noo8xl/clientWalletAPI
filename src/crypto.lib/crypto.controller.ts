@@ -3,41 +3,60 @@ import { TSX_DATA } from '../interfaces/transactionData.interface';
 import { GetDomainNameFromOrigin } from './lib.helper/getDomainName.helper';
 import CryptoService from "./crypto.service";
 
+
 class CryptoController {
 
-	async generateWalletAddress(req: Request, res: Response, next: NextFunction) {
-		const coinName: string = req.params.coinName.toLowerCase().replace('-', '/')
-		const userId: string = req.params.userId
+	async generateWalletAddress(req: Request, res: Response, next: NextFunction): Promise<Response> {
+		let address: string;
+		const dto = {
+			userId: req.params.userId,
+			coinName: req.params.coinName.toLowerCase().replace('-', '/')
+		}
+		
 		try {
-			const result: any = await new CryptoService(coinName, userId).generateWalletAddressByCoinName()
-			return res.status(200).json(result)
+			const service = new CryptoService(dto)
+			address = await service.generateOneTimeAddressByCoinName()
+
+			return res.status(200).json({address})
 		} catch (e) {
 			next(e)
 		}
 	}
 
-	async checkAddress(req: Request, res: Response, next: NextFunction) {
-		const coinName: string = req.params.coinName.toLowerCase().replace('-', '/')
-		const address: string = req.params.address
+	async checkAddress(req: Request, res: Response, next: NextFunction): Promise<Response> {
+		let result: boolean;
+		const dto = {
+			coinName: null,
+			userId: req.params.userId,
+			address: req.params.address
+		}
+		
 		try {
-			return res.status(200).json(await new CryptoService(coinName, address).checkAddress())
+			const service = new CryptoService(dto)
+			result = await service.checkAddress()
+
+			return res.status(200).json({result})
 		} catch (e) {
 			next(e)
 		}
 	}
 
-	async getBalance(req: Request, res: Response, next: NextFunction) {
+	async getBalance(req: Request, res: Response, next: NextFunction): Promise<Response> {
 		const coinName: string = req.params.coinName.toLowerCase().replace('-', '/')
 		const address: string = req.params.address
+		const dto = {
+			userId: req.params.userId,
+			coinName: req.params.coinName.toLowerCase().replace('-', '/')
+		}
 		try {
-			return res.status(200).json(await new CryptoService(coinName, address).getBalance())
+			return res.status(200).json(await new CryptoService({coinName, address}).getBalance())
 		} catch (e) {
 			next(e)
 		}
 	}
 	
-	async sendManualTransaction(req: Request, res: Response, next: NextFunction) {
-
+	async sendManualTransaction(req: Request, res: Response, next: NextFunction): Promise<Response> {
+		let result: boolean
 		let tsxData: TSX_DATA = {
 			coinName: req.params.coinName.toLowerCase().replace('-', '/'),
 			domainName: await GetDomainNameFromOrigin(req.headers.origin),
@@ -47,12 +66,15 @@ class CryptoController {
 				publicKey: ''
 			},
 			balance: 0,
-			userId: req.params.staffId
+			userId: req.params.userId
 		}
 
 		try {
-			return res.status(200).json(await new CryptoService(tsxData.coinName).sendManualTransaction(tsxData))
-		} catch (e) {
+			const service = new CryptoService({coinName: tsxData.coinName})
+			result = await service.sendManualTransaction(tsxData)
+
+			return res.status(200).json(result)
+			} catch (e) {
 			next(e)
 		}
 	}

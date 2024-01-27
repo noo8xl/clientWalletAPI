@@ -38,4 +38,8 @@ export default class ApiError extends Error {
     // console.log('telegram api status => ', sendErr);
     return new ApiError(404, `can't find any ${action} data`)
   }
+
+  // ############################################################################################## //
+  
+  private sendErrorMessage(): any {}
 }

@@ -1,7 +1,7 @@
 import database from '../databaseQuery.service'
-import Balance from './balance_checker'
+import Balance from './Balances'
 import ApiError from '../../exceptions/apiError'
-import Transaction from './sendTransaction'
+import Transaction from './Transactions'
 import { TSX_DATA } from '../../interfaces/transactionData.interface'
 
 // https://www.geeksforgeeks.org/how-to-handle-child-threads-in-node-js/

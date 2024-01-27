@@ -14,9 +14,9 @@ import { USER_BASE } from '../../models/model.interfaces/userBase.interface'
 import DomainList from '../../models/DomainList.model'
 import { DOMAIN_BASE } from '../../models/model.interfaces/domainBase.interface'
 import StaffParams from '../../models/StaffParams.model'
-import { STAFF_PARAMS } from '../..//models/model.interfaces/staffParams.interface'
+import { STAFF_PARAMS } from '../../models/model.interfaces/staffParams.interface'
 import StaffWallet from '../../models/StaffWallet.model'
-import { STAFF_WALLET } from '../..//models/model.interfaces/staffWallet.interface'
+import { STAFF_WALLET } from '../../models/model.interfaces/staffWallet.interface'
 import RecruiterOwnUsers from '../../models/recruiter_own_users.model'
 import { RECRUITER_OWN_USERS } from '../../models/model.interfaces/recruiterOwnUsers.interface'
 import RecruiterWallet from '../../models/recruiter_wallet.model'
@@ -340,6 +340,8 @@ export default class Transaction {
         .then(async () => { await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData) })
         .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
         .catch((e:any) => { throw new Error(e) })
+        .finally(() => {console.log("sending complete.");
+        })
 
     // wait until confirmed
     // let currentSeqno = seqno;
@@ -459,3 +461,6 @@ export default class Transaction {
     // 40% - owner 
     // ------------
     // 80% = staff + recruiter(10% from staff fee)
+
+
+    

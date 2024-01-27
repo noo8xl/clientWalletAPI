@@ -15,6 +15,7 @@ import validateAccessKey from './src/middlewares/accessKeyChecker'
 import cluster from "cluster"
 import totalCPUs from "os"
 import { mongo } from './src/config/mongoDB.config'
+import { errors } from 'ethers'
 const cpuNum: number = totalCPUs.cpus().length;
 
 app.use('/static/', express.static(path.join(__dirname, + './' + '/static/')))
@@ -73,17 +74,9 @@ async function Connection() {
 //   })
 // }
 const server = http.createServer(app)
-  const PORT: number = Number(process.env.PORT)
-  console.log(`Worker ${process.pid} started`);
+const PORT: number = Number(process.env.PORT)
   
-  server.listen(PORT, async () => {
-    try {
-      console.clear()
-      await Connection()
-    } catch (e: any) {
-      return console.error(new Error(e))
-    }
-  })
+server.listen(PORT, (e: any) => console.log(e)) 
 
 
 // auto payment
