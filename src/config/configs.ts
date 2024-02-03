@@ -1,3 +1,4 @@
+import cors from 'cors';
 import { config } from 'dotenv';
 config();
 
@@ -37,3 +38,19 @@ export const TRON_API_KEY: string | undefined = process.env.TRON_API_KEY;
 export const ETH_KEY: string | undefined = process.env.ETH_API_KEY;
 export const SOL_KEY: string | undefined = process.env.SOLANA_API_KEY;
 
+export const CORS_OPTIONS: cors.CorsOptions = {
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'X-Access-Token',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Credentials',
+    'Authorization',
+  ],
+  credentials: true,
+  methods: 'GET,PUT,PATCH,POST,DELETE',
+  origin: true,
+  preflightContinue: false,
+}

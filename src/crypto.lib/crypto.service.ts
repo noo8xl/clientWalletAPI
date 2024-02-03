@@ -1,5 +1,5 @@
 import { coinList } from './lib.helper/coinList'
-import database from './databaseQuery.service'
+import database from './database.service'
 import ApiError from "../exceptions/apiError";
 import Balance from './baseUsage/Balances'
 import { TSX_DATA } from "../interfaces/transactionData.interface";

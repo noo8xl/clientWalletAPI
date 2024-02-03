@@ -3,7 +3,6 @@ const app = express()
 require('dotenv').config()
 import cors from 'cors'
 import compression from 'compression'
-// import { mongo } from './config/mongo_DB_config'
 import router from './src/routes/index'
 import { CORS_OPTIONS } from './src/config/cors.config'
 import * as helmet from "helmet";
@@ -12,11 +11,6 @@ import path from 'path'
 import http from 'node:http';
 import validateAccessKey from './src/middlewares/accessKeyChecker'
 // import { balanceParser } from './services/crypto.lib/baseUsage/balanceParser'
-import cluster from "cluster"
-import totalCPUs from "os"
-import { mongo } from './src/config/mongoDB.config'
-import { errors } from 'ethers'
-const cpuNum: number = totalCPUs.cpus().length;
 
 app.use('/static/', express.static(path.join(__dirname, + './' + '/static/')))
 
@@ -29,54 +23,17 @@ app.use(bodyParser.json({ type: 'application/*+json' }))
 //   res.setHeader('Content-Type', 'text/plain')
 //   next()
 // })
-
 app.use(compression())
-
 app.disable('x-powered-by')
+
+
 // routers
 app.use('/crypto', validateAccessKey, router)
 
-async function Connection() {
-  // connect to database
-  await mongo
-  // await startParser()
-  console.log('cpu`s num => ', cpuNum);
-  console.log('server was running...')
-}
-
-
-// if (cluster.isMaster) {
-//   console.log(`Number of CPUs is ${cpuNum}`);
-//   console.log(`Master ${process.pid} is running`);
-
-//   // Fork workers.
-//   for (let i = 0; i < cpuNum; i++) {
-//     cluster.fork();
-//   }
-
-//   cluster.on("exit", (worker, code, signal) => {
-//     console.log(`worker ${worker.process.pid} died`);
-//     console.log("Let's fork another worker!");
-//     cluster.fork();
-//   });
-// } else {
-//   const server = http.createServer(app)
-//   const PORT: number = Number(process.env.PORT)
-//   console.log(`Worker ${process.pid} started`);
-  
-//   server.listen(PORT, async () => {
-//     try {
-//       console.clear()
-//       await Connection()
-//     } catch (e: any) {
-//       return console.error(new Error(e))
-//     }
-//   })
-// }
 const server = http.createServer(app)
 const PORT: number = Number(process.env.PORT)
   
-server.listen(PORT, (e: any) => console.log(e)) 
+server.listen(PORT, (e: Error) => {console.error(e)}) 
 
 
 // auto payment

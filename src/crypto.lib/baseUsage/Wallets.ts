@@ -9,7 +9,7 @@ import * as bip39 from 'bip39'
 import * as bitcoin from 'bitcoinjs-lib'
 import bchaddr from 'bchaddrjs'
 import { TRON_API_KEY } from '../../config/configs';
-import database from '../databaseQuery.service'
+import database from '../database.service'
 import { coinList } from '../lib.helper/coinList';
 import ApiError from '../../exceptions/apiError';
 import { ACCOUNT_WALLET, ACCOUNT_WALLET_ITEM, WALLET_DATA, WALLET_LIST } from '../../interfaces/Wallets.interface';

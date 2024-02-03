@@ -1,4 +1,4 @@
-import database from '../databaseQuery.service'
+import database from '../database.service'
 import Balance from './Balances'
 import ApiError from '../../exceptions/apiError'
 import Transaction from './Transactions'

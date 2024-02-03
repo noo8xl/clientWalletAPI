@@ -19,15 +19,15 @@ export default class TelegramNotificationApi {
 
   constructor() {}
 
-  async sendTransactionInfo(chatId: number, message: string): Promise<any> {
+  public async sendInfoMessage(chatId: number, userRequest: string): Promise<boolean> {
 
-		const sendMessage: any = await axios(
+		const sendMessage: boolean = await axios(
 			`${this.apiPath}/sendActionMessage/`, {
 			method: 'POST',
 			responseType: 'stream',
 			data: {
 					chatId,
-					userRequest: message
+					userRequest
 			},
 			headers: {
 					'X-Access-Token': this.accessToken,
@@ -47,7 +47,34 @@ export default class TelegramNotificationApi {
 		return sendMessage
   }
 
-	public async sendErrorMessage(msg: string) {}
+	public async sendErrorMessage(msg: string): Promise<boolean> {
+
+		const sendMessage: boolean = await axios(
+			`${this.apiPath}/sendActionMessage/`, {
+			method: 'POST',
+			responseType: 'stream',
+			data: {
+					chatId: this.devId,
+					userRequest: msg
+			},
+			headers: {
+					'X-Access-Token': this.accessToken,
+					'AccessKey': this.apiKey
+			}
+		})
+			.then((res: AxiosResponse) => {
+				console.log(res.status)
+				console.log(res.statusText)
+				// console.log('res body => ', res);
+				return true
+			})
+			.catch((e: AxiosError) => {
+				console.log('error => ', e.message);
+				return false
+			})
+		return sendMessage
+
+	}
 
 	// some func
 	private async doSome() {

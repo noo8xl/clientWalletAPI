@@ -33,7 +33,7 @@ export default class ApiError extends Error {
     return new ApiError(500, 'internal server error')
   }
 
-  static async NotFoundError(action: string, ): Promise<ApiError> {
+  static async NotFoundError(action: string): Promise<ApiError> {
     // const sendErr: boolean = await telegram.sendErrorData(500, `${action} was failed.`)
     // console.log('telegram api status => ', sendErr);
     return new ApiError(404, `can't find any ${action} data`)
