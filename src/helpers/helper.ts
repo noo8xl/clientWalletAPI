@@ -1,10 +1,55 @@
+import { availableCoins } from "src/config/configs";
+import ApiError from "src/exceptions/apiError";
 
 
-class Helper {
+export default class Helper {
 
   constructor(){}
 
+  //getDomainNameFromOrigin -> get origin name
+  async getOriginName(origin: string): Promise<string> {
+    return origin.split('//')[1]
+  }
+  
+  //getCoinApiName -> get coin full name from coinName to use in API request at getRate *
+  async getCoinApiName(coin: string): Promise<string> {
+    for (let i = 0; i <= availableCoins.length - 1; i++) {
+      console.log('iter => ', availableCoins[i]);
+      if (coin !== availableCoins[i].coinName) {
+        continue;
+      } else {
+        return availableCoins[i].coinApiName
+      }
+    }
+    throw await ApiError.NotFoundError('coin name for api')
+  }
+
+
+  // generatePassword -> generate random string by length
+  async generatePassword(passwordLength: number): Promise<string> {
+    const numberChars: string = "0123456789";
+    const upperChars: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowerChars: string = "abcdefghijklmnopqrstuvwxyz";
+    const allChars: string = numberChars + upperChars + lowerChars;
+    let randPasswordArray = Array(passwordLength);
+    randPasswordArray[0] = numberChars;
+    randPasswordArray[1] = upperChars;
+    randPasswordArray[2] = lowerChars;
+    randPasswordArray = randPasswordArray.fill(allChars, 3);
+    const result: string = this.shuffleArray(randPasswordArray.map(function (x) { return x[Math.floor(Math.random() * x.length)] })).join('');
+    return result
+  }
+
+  ////////// -----------------------------------
+
+  private shuffleArray(array: string[]) {
+    for (let i = array.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      let temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+    return array;
+  }
   
 }
-
-export default new Helper();

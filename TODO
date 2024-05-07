@@ -1,0 +1,12 @@
+
+ -> update db usage
+ -> implement different databases logic
+
+ -> clean the mess in the crypto folder
+ -> refactor helper to 'class' 
+
+ -> refactor models
+ -> refactor schemas and add sql db table types
+
+ -> implement multithreading for the balance parser *
+ -> implement fiat to crypto exchange *

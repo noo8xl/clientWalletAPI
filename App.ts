@@ -33,7 +33,7 @@ app.use('/crypto', validateAccessKey, router)
 const server = http.createServer(app)
 const PORT: number = Number(process.env.PORT)
   
-server.listen(PORT, (e: Error) => {console.error(e)}) 
+server.listen(PORT, () => console.error(`Server is running..`)) 
 
 
 // auto payment

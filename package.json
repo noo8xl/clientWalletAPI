@@ -7,7 +7,7 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "dev": "nodemon ./dist/App.js",
+    "dev": "rm -rf ./dist && tsc && nodemon ./dist/App.js",
     "build": "cross-env NODE_ENV=env node dist/App.js",
     "start": "./run_scripts/target/release/run_scripts"
   },
