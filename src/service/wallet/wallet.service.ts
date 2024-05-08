@@ -15,5 +15,12 @@ export abstract class Wallet {
   abstract getTransactionInfo(): Promise<any>;
 
   abstract getRate(): Promise<RATE_DATA>;
+
+  // hasBalance : bool 
+  // used: bool
+  // balance: int
+  // 
+  //
+  //
 }
 

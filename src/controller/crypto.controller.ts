@@ -8,6 +8,7 @@ import { WALLET_REQUEST_DTO } from '../types/wallet/wallet.types';
 // CryptoController -> handle user request 
 class CryptoController {
 
+
 	async generateWalletAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
 
 		const dto: WALLET_REQUEST_DTO = {

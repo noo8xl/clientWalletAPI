@@ -2,7 +2,7 @@ import { availableCoins } from "src/config/configs";
 import ApiError from "src/exceptions/apiError";
 
 
-export default class Helper {
+class Helper {
 
   constructor(){}
 
@@ -53,3 +53,5 @@ export default class Helper {
   }
   
 }
+
+export default new Helper()

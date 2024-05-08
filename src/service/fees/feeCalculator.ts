@@ -1,8 +1,8 @@
 import ApiError from "../../exceptions/apiError"
-import { coinList } from "./coinList"
+import { coinList } from "../../config/configs"
 
 
-class FeeCalculator {
+export default class FeeCalculator {
   coinName: string
 
   constructor(coin: string) {
@@ -36,5 +36,3 @@ class FeeCalculator {
     return 0
   }
 }
-
-export default FeeCalculator;

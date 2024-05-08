@@ -1,25 +1,47 @@
 
-import ApiError from '../../exceptions/apiError';
-import { WALLET_LIST } from '../../types/Wallets.interface';
-import { DbCore } from './db.core';
-import { coinList } from '../../crypto.lib/lib.helper/coinList';
-import { OkPacket, QueryError, RowDataPacket } from 'mysql2';
+import mysql from 'mysql2'
+import { ResultSetHeader, QueryError, RowDataPacket } from 'mysql2';
+import { TelegramNotificationApi } from 'src/api/notificationCall.api';
+import { MYSQL_DB, coinList } from '../../config/configs';
+import { DB_SELECT_RESPONSE } from 'src/types/database/db.response.types';
+import { WalletDatabaseCore } from './db.wallet.core';
 
-class WalletDatabaseService extends Database {
+export class WalletDatabaseService {
+	private db: mysql.Connection
+  private readonly dbHost = MYSQL_DB.host
+	private readonly dbUser = MYSQL_DB.userName
+	private readonly dbPassword = MYSQL_DB.userPassword
+	private readonly dbName = MYSQL_DB.databaseName
+
+	private dbInteract: WalletDatabaseCore
+	private readonly notificator: TelegramNotificationApi = new TelegramNotificationApi()
+
 
 	constructor() {
-		super()
+		this.initConnection()
 	}
 
-	// saveNewClient -> save new api user to db using mongoDB
-	public async saveNewClient(): Promise<OkPacket | QueryError>  {
-		// add here field {fiatName: string}  // -> AUD, AED, RUB, EUR, USD  --- > default = USD 
-		return null
-	}
+
+  async insertData(): Promise<boolean>{
+    return false
+  }
+
+  async selectData(): Promise<DB_SELECT_RESPONSE> {
+    let c: DB_SELECT_RESPONSE;
+    return c
+  }
+
+  async updateData(): Promise<boolean> {
+    return false
+  }
+  async deleteData(): Promise<boolean>{
+    return false
+  }
+
 
 	// saveUserWallet -> save each wallet to db for current user and domain
-	public async saveUserWallet(walletArr: WALLET_LIST): Promise<OkPacket | QueryError> {
-		let result: OkPacket | QueryError
+	public async saveUserWallet(walletArr: WALLET_LIST): Promise<ResultSetHeader | QueryError> {
+		let result: ResultSetHeader | QueryError
 		const sql: string = `
       INSERT INTO wallet_list 
       ( coin_name, wallet_address, private_key, public_key, date_of_create, domain_name, user_id) 
@@ -37,12 +59,15 @@ class WalletDatabaseService extends Database {
 				walletArr[i].domainName,
 				walletArr[i].userId,
 			]
-			result = await this.insertData(sql, listOfValues)
+			this.dbInteract = new WalletDatabaseCore(this.db, sql, listOfValues)
+			result = await this.dbInteract.insertData()
 		}
+		this.closeConnection()
 		return result
 	}
 
-  async getWalletSecretKey(address: string, coinName: string): Promise<RowDataPacket[] | QueryError>  {
+  async getWalletSecretKey(address: string, coinName: string): Promise<DB_SELECT_RESPONSE>  {
+		let result: DB_SELECT_RESPONSE;
 
 		const sql: string = `
 			SELECT private_key, public_key
@@ -51,28 +76,33 @@ class WalletDatabaseService extends Database {
 			AND coin_name = ?
 			`;
 
-		return await this.selectData(sql, [address, coinName])
+		this.dbInteract = new WalletDatabaseCore(this.db, sql, [address, coinName])
+		result = await this.dbInteract.selectData()
+		this.closeConnection()
+
+		return result
 	}
 
 	
-  async isActiveAddress(coinName: string, userId: string, curDate: number): Promise<RowDataPacket[] | QueryError>  {
+  // async isActiveAddress(coinName: string, userId: string, curDate: number): Promise<RowDataPacket[] | QueryError>  {
     
-    const from: number = curDate - (1000 * 60 * 30)
-    const to: number = curDate + (1000 * 60 * 30)
+  //   const from: number = curDate - (1000 * 60 * 30)
+  //   const to: number = curDate + (1000 * 60 * 30)
 
-    const sql: string = `
-      SELECT DISTINCT wallet_address, expired_date 
-      FROM wallet_list 
-      WHERE coin_name = ?
-      AND user_id = ? 
-      AND expired_date 
-      BETWEEN ?
-      AND ? 
-		`;
-		return await this.selectData(sql, [coinName, userId, from, to])
-  }
+  //   const sql: string = `
+  //     SELECT DISTINCT wallet_address, expired_date 
+  //     FROM wallet_list 
+  //     WHERE coin_name = ?
+  //     AND user_id = ? 
+  //     AND expired_date 
+  //     BETWEEN ?
+  //     AND ? 
+	// 	`;
+	// 	return await this.selectData(sql, [coinName, userId, from, to])
+  // }
 
 	// ___________________________________________________________
+
 
 
 
@@ -132,6 +162,27 @@ class WalletDatabaseService extends Database {
 	// 	}
 	// }
 
+  // initConnection -> init mysql connection 
+	private async initConnection(): Promise<void>  {
+
+		this.db = mysql.createConnection({
+			host: this.dbHost,
+			user: this.dbUser,
+			password: this.dbPassword,
+			database: this.dbName
+		})
+
+		this.db.connect(async (err: mysql.QueryError | null) => {
+			if (err) return await this.notificator.sendErrorMessage(err.message)
+			return console.log('mysql database was connected.')
+		})
+
+	}
+
+	private closeConnection(): void {
+		this.db.destroy()
+	}
+
 }
 
-export default new WalletDatabaseService()
+// export default new WalletDatabaseService()

@@ -5,7 +5,7 @@ export default class ApiError extends Error {
   status: number
   errors: string[]
 
-  constructor(status: number, message: string, errors: string[] = []) {
+  constructor(status?: number, message?: string, errors: string[] = []) {
     super(message)
     this.message = message
     this.status = status
@@ -33,7 +33,7 @@ export default class ApiError extends Error {
     return new ApiError(500, 'internal server error')
   }
 
-  static async NotFoundError(action: string): Promise<ApiError> {
+  static async NotFoundError(action: string) {
     // const sendErr: boolean = await telegram.sendErrorData(500, `${action} was failed.`)
     // console.log('telegram api status => ', sendErr);
     return new ApiError(404, `can't find any ${action} data`)

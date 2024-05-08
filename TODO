@@ -1,9 +1,14 @@
 
- -> update db usage
- -> implement different databases logic
+ -> prettier exeptions class logic
 
- -> clean the mess in the crypto folder
- -> refactor helper to 'class' 
+ -> implement exchange service
+ -> implement customer service
+
+ -> implement different databases logic +++ ---------------------
+ -> update db usage 
+
+ -> clean the mess in the crypto folder +++ ---------------------
+ -> refactor helper to 'class'  +++ ------------------
 
  -> refactor models
  -> refactor schemas and add sql db table types

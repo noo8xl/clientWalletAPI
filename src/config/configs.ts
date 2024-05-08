@@ -15,11 +15,32 @@ export const apiUrl = process.env.API_URL;
 // ############################################# database keys area ############################################ //
 // ============================================================================================================= //
 
+export const MONGO_DB = {
+  uri: process.env.MONGO_DB_LINK,
+  userName: process.env.MONGO_DB_USER,
+  userPassword: process.env.MONGO_DB_PASSWORD,
+  databaseName: process.env.MONGO_DB_NAME,
+}
 
-export const MYSQL_HOST: string | undefined = process.env.HOST;
-export const MYSQL_DB_USER: string | undefined = process.env.MYSQL_DB_USER;
-export const MYSQL_PWD: string | undefined = process.env.MYSQL_DB_PASSWORD;
-export const MYSQL_DB_NAME: string | undefined = process.env.MYSQL_DB_NAME;
+export const REDIS_STORE = {
+  url: process.env.REDIS_URL,
+  user: process.env.REDIS_USER,
+  password: process.env.REDIS_PASSWORD,
+  host: process.env.REDIS_HOST,
+  port: process.env.REDIS_PORT,
+  // tls: true,
+  // key: readFileSync('./redis_user_private.key'),
+  // cert: readFileSync('./redis_user.crt'),
+  // ca: [readFileSync('./redis_ca.pem')]
+};
+
+export const MYSQL_DB = {
+  host: process.env.HOST,
+  userName: process.env.MYSQL_DB_USER,
+  userPassword: process.env.MYSQL_DB_PASSWORD,
+  databaseName: process.env.MYSQL_DB_NAME,
+}
+
 
 // ============================================================================================================= //
 // ########################################### nitification keys area ########################################## //
@@ -80,12 +101,6 @@ export const OWNER_WALLET_LIST = [
   { coinName: 'trx', mainAddress: process.env.MAIN_TRX_WALLET },
   { coinName: 'ton', mainAddress: process.env.MAIN_TON_WALLET }
   { coinName: 'sol', mainAddress: process.env.MAIN_SOL_WALLET },
-  // {
-  //   coinName: 'bch',
-  //   mainAddress: process.env.MAIN_BCH_WALLET
-  // },
-  // {
-  //   coinName: 'trx/usdt',
-  //   mainAddress: process.env.MAIN_TRX_USDT_WALLET
-  // },
+  { coinName: 'bch', mainAddress: process.env.MAIN_BCH_WALLET },
+  { coinName: 'trx/usdt', mainAddress: process.env.MAIN_TRX_USDT_WALLET },
 ]
