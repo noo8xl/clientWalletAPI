@@ -3,8 +3,8 @@ import Web3 from 'web3'
 import {Wallet} from "./wallet.service";
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet.types";
 import { ETH_KEY } from '../../config/configs';
-import { getCoinApiName } from 'src/crypto.lib/lib.helper/getCoinApiName';
 import axios from 'axios';
+import { Helper } from '../../helpers/helper';
 
 
 export class EthereumService extends Wallet{
@@ -12,6 +12,7 @@ export class EthereumService extends Wallet{
   private readonly API_KEY: string = ETH_KEY
   private userId: string
   private address: string
+  private readonly helper: Helper = new Helper()
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
@@ -90,7 +91,7 @@ export class EthereumService extends Wallet{
 
   async getRate(): Promise<RATE_DATA> {
     let rateData: RATE_DATA;
-    const coinNameForUrl: string = await getCoinApiName(this.coinName)
+    const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
     const fiatName: string = "" // await db get user details (fiat name )
 
     const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`

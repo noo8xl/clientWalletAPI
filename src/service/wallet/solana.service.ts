@@ -1,19 +1,20 @@
 
 import solanaWeb3, { PublicKey } from '@solana/web3.js'
-import { SOL_KEY } from "src/config/configs"
+import { SOL_KEY } from "../../config/configs"
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "src/types/wallet/wallet.types"
 import crypto from "crypto"
-import Web3 from 'web3'
+import Web3 from '@solana/web3.js'
 import { Wallet } from './wallet.service'
-import { getCoinApiName } from 'src/crypto.lib/lib.helper/getCoinApiName'
 import axios from 'axios'
+import { Helper } from '../../helpers/helper'
 
 
-export class TronService extends Wallet {
+export class SolanaService extends Wallet {
   coinName: string
   private readonly API_KEY = SOL_KEY
   private userId: string
   private address: string
+  private readonly helper: Helper = new Helper()
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
@@ -109,7 +110,7 @@ export class TronService extends Wallet {
 
   async getRate(): Promise<RATE_DATA> {
     let rateData: RATE_DATA;
-    const coinNameForUrl: string = await getCoinApiName(this.coinName)
+    const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
     const fiatName: string = "" // await db get user details (fiat name )
 
     const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`

@@ -1,6 +1,6 @@
 import { MongoClient } from "mongodb";
 import { Database } from "./database.service";
-import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "src/types/database/db.response.types";
+import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "../../types/database/db.response.types";
 
 
 export class CustomerDatabaseCore extends Database {

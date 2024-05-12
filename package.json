@@ -13,6 +13,9 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.48.0",
+    "@ton/core": "^0.56.3",
+    "@ton/crypto": "^3.2.0",
+    "@ton/ton": "^13.11.1",
     "axios": "^1.6.8",
     "bchaddrjs": "^0.5.2",
     "bigint-buffer": "^1.1.5",
@@ -41,6 +44,7 @@
     "web3": "^4.8.0"
   },
   "devDependencies": {
+    "@types-x/tronweb": "^5.1.0-beta.6",
     "@types/axios": "^0.14.0",
     "@types/bchaddrjs": "^0.4.0",
     "@types/compression": "^1.7.2",

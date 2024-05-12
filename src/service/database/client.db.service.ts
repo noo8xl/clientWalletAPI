@@ -1,8 +1,9 @@
-import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "src/types/database/db.response.types";
+import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "../../types/database/db.response.types";
 import { MONGO_DB } from "../../config/configs"
 import { MongoClient } from "mongodb";
 import { CustomerDatabaseCore } from "./db.customer.core";
-import { TelegramNotificationApi } from "src/api/notificationCall.api";
+import { TelegramNotificationApi } from "../../api/notificationCall.api";
+import { Helper } from "../../helpers/helper";
 
 
 export class CustomerDatabaseService {
@@ -14,17 +15,27 @@ export class CustomerDatabaseService {
 
   private dbInteract: CustomerDatabaseCore
   private readonly notificator: TelegramNotificationApi = new TelegramNotificationApi()
+  private readonly helper: Helper = new Helper()
 
   constructor() {
     this.initConnection()
   }
 
-  async findUserByFilter(): Promise<DB_SELECT_RESPONSE>{
+  public async isUserExists(): Promise<boolean> {
+    let filter: any = {
+      userEmail: this.user
+    }
+
+    return true
+  }
+
+  public async findUserByFilter(): Promise<DB_SELECT_RESPONSE>{
     let c: DB_SELECT_RESPONSE;
     let filter: any = {}
     
+    await this.helper.validateObject(filter)
     this.dbInteract = new CustomerDatabaseCore(this.db, this.dbName, filter)
-    this.dbInteract.selectData()
+    await this.dbInteract.selectData()
 
     await this.disconnectClient()
     return c
@@ -35,6 +46,7 @@ export class CustomerDatabaseService {
 		// add here field {fiatName: string}  // -> AUD, AED, RUB, EUR, USD  --- > default = USD 
     let filter: any = {}
 
+    await this.helper.validateObject(filter)
     this.dbInteract = new CustomerDatabaseCore(this.db, this.dbName, filter)
     this.dbInteract.insertData()
 

@@ -1,9 +1,7 @@
 
 import { Request, Response, NextFunction } from "express"
-import { Http2ServerResponse } from "http2"
 import { AUTH_CLIENT_DTO } from "../types/auth/client.dto.type"
-import ApiError from "src/exceptions/apiError"
-import { AuthService } from "src/service/auth.service"
+import { AuthService } from "../service/auth.service"
 
 class AuthController {
 
@@ -11,18 +9,31 @@ class AuthController {
 
     const clientDto: AUTH_CLIENT_DTO = req.body
     const service: AuthService = new AuthService(clientDto)
+    await service.signUpNewClient()
+    
+    res.status(201)
+    res.json({message: "client successfully created"})
+    res.end()
+  }
+
+  async revokeAnAccess(req: Request, res: Response, next: NextFunction): Promise<void>{
 
     try {
-      await service.signUpNewClient()
-      res.status(201)
-      res.json({message: "client successfully created"})
-      res.end()
-
+      
     } catch (e: unknown) {
       next(e)
     }
-    
   }
+
+  async doSome(req: Request, res: Response, next: NextFunction): Promise<void>{
+
+    try {
+      
+    } catch (e: unknown) {
+      next(e)
+    }
+  }
+
 }
 
 export default new AuthController()

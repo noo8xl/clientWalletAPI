@@ -1,7 +1,6 @@
-import { QueryError, RowDataPacket } from "mysql2"
-import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "../../types/database/db.response.types"
 import mysql from "mysql2"
 import { MongoClient } from 'mongodb'
+import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "../../types/database/db.response.types"
 
 
 export abstract class Database {

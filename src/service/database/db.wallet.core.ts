@@ -1,9 +1,9 @@
-import mysql, { ResultSetHeader, QueryError, RowDataPacket, OkPacket } from 'mysql2'
+import mysql, { ResultSetHeader, QueryError, RowDataPacket } from 'mysql2'
 
 import {TelegramNotificationApi} from '../../api/notificationCall.api';
-import ApiError from 'src/exceptions/apiError';
+import ApiError from '../../exceptions/apiError';
 import { Database } from './database.service';
-import { DB_INSERT_RESPONSE } from 'src/types/database/db.response.types';
+import { DB_INSERT_RESPONSE } from '../../types/database/db.response.types';
 
 
 export class WalletDatabaseCore extends Database {
@@ -11,7 +11,7 @@ export class WalletDatabaseCore extends Database {
   private sqlString: string
   private values: any
 
-  private notificator: TelegramNotificationApi = new TelegramNotificationApi()
+  private readonly notificator: TelegramNotificationApi = new TelegramNotificationApi()
 
   constructor(db: mysql.Connection, sql: string, values: any){
     super(db)

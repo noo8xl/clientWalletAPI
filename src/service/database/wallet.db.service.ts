@@ -1,9 +1,9 @@
 
 import mysql from 'mysql2'
-import { ResultSetHeader, QueryError, RowDataPacket } from 'mysql2';
-import { TelegramNotificationApi } from 'src/api/notificationCall.api';
+import { ResultSetHeader, QueryError } from 'mysql2';
+import { TelegramNotificationApi } from '../../api/notificationCall.api';
 import { MYSQL_DB, coinList } from '../../config/configs';
-import { DB_SELECT_RESPONSE } from 'src/types/database/db.response.types';
+import { DB_SELECT_RESPONSE } from '../../types/database/db.response.types';
 import { WalletDatabaseCore } from './db.wallet.core';
 
 export class WalletDatabaseService {
@@ -40,7 +40,7 @@ export class WalletDatabaseService {
 
 
 	// saveUserWallet -> save each wallet to db for current user and domain
-	public async saveUserWallet(walletArr: WALLET_LIST): Promise<ResultSetHeader | QueryError> {
+	public async saveUserWallet(walletArr: any): Promise<ResultSetHeader | QueryError> {
 		let result: ResultSetHeader | QueryError
 		const sql: string = `
       INSERT INTO wallet_list 

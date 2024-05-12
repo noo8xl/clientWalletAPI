@@ -1,14 +1,21 @@
-import { availableCoins } from "src/config/configs";
-import ApiError from "src/exceptions/apiError";
+import { availableCoins } from "../config/configs";
+import ApiError from "../exceptions/apiError";
 
 
-class Helper {
+export class Helper {
 
   constructor(){}
 
-  //getDomainNameFromOrigin -> get origin name
+  //getDomainNameFromOrigin -> get domain name
   async getOriginName(origin: string): Promise<string> {
     return origin.split('//')[1]
+  }
+
+
+  // validateObject -> validate if object keu has an undefined value 
+  async validateObject(obj: any): Promise<void> {
+      for (let i in obj) 
+        if (obj[i] === undefined) throw await ApiError.BadRequest("Found an undefined value")
   }
   
   //getCoinApiName -> get coin full name from coinName to use in API request at getRate *
@@ -54,4 +61,3 @@ class Helper {
   
 }
 
-export default new Helper()

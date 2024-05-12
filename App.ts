@@ -1,17 +1,15 @@
-import express, { Request, Response, NextFunction } from 'express'
-const app = express()
-require('dotenv').config()
-import cors from 'cors'
+import express from 'express'
 import compression from 'compression'
 import router from './src/routes/index'
-import { CORS_OPTIONS } from './src/config/cors.config'
-import * as helmet from "helmet";
 import bodyParser from 'body-parser'
 import path from 'path'
 import http from 'node:http';
 import validateAccessKey from './src/middlewares/accessKeyChecker'
+import { port } from './src/config/configs'
+import { host } from "./src/config/configs"
 // import { balanceParser } from './services/crypto.lib/baseUsage/balanceParser'
 
+const app = express()
 app.use('/static/', express.static(path.join(__dirname, + './' + '/static/')))
 
 // add parser function with timeout <<<============
@@ -31,9 +29,7 @@ app.disable('x-powered-by')
 app.use('/crypto', validateAccessKey, router)
 
 const server = http.createServer(app)
-const PORT: number = Number(process.env.PORT)
-  
-server.listen(PORT, () => console.error(`Server is running..`)) 
+server.listen(port, () => console.error(`Server is running on http://${host}:${port}/`)) 
 
 
 // auto payment

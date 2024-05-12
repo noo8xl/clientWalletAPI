@@ -4,15 +4,17 @@ import * as bitcoin from 'bitcoinjs-lib'
 import bchaddr from 'bchaddrjs'
 
 import {Wallet} from "./wallet.service";
-import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from '../..//types/wallet/wallet.types';
+import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from '../../types/wallet/wallet.types';
 import axios from 'axios';
-import { getCoinApiName } from 'src/crypto.lib/lib.helper/getCoinApiName';
+import { Helper } from '../../helpers/helper';
+
 
 // BitcoinService -> implements btc blockchain manipulation
 export class BitcoinService extends Wallet {
   coinName: string
   private userId: string
   private address: string
+  private readonly helper: Helper = new Helper()
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
@@ -134,7 +136,7 @@ export class BitcoinService extends Wallet {
 
   async getRate(): Promise<RATE_DATA> {
     let rateData: RATE_DATA;
-    const coinNameForUrl: string = await getCoinApiName(this.coinName)
+    const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
     const fiatName: string = "" // await db get user details (fiat name )
 
     const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`

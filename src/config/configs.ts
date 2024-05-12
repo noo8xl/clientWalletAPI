@@ -7,6 +7,7 @@ config();
 // ============================================================================================================= //
 
 export const port = process.env.PORT;
+export const host = process.env.HOST
 export const apiUrl = process.env.API_URL;
 // export const corsOpts: cors.CorsOptions = {....}
 
@@ -87,7 +88,7 @@ export const availableCoins = [
   { coinName: 'btc', coinApiName: 'bitcoin' },
   { coinName: 'eth', coinApiName: 'ethereum' },
   { coinName: 'trx', coinApiName: 'tron' },
-  { coinName: 'ton', mainAddress: 'the-open-network' }
+  { coinName: 'ton', mainAddress: 'the-open-network' },
   { coinName: 'sol', coinApiName: 'solana' },
   // { coinName: 'bch', coinApiName: 'bitcoin-cash' },
   // { coinName: 'usdt', coinApiName: 'tether' },
@@ -97,10 +98,10 @@ export const availableCoins = [
 export const OWNER_WALLET_LIST = [
   { coinName: 'btc', mainAddress: process.env.MAIN_BTC_WALLET },
   { coinName: 'eth', mainAddress: process.env.MAIN_ETH_WALLET },
-  { coinName: 'usdt', mainAddress: process.env.MAIN_USDT_WALLET },
   { coinName: 'trx', mainAddress: process.env.MAIN_TRX_WALLET },
-  { coinName: 'ton', mainAddress: process.env.MAIN_TON_WALLET }
+  { coinName: 'ton', mainAddress: process.env.MAIN_TON_WALLET },
   { coinName: 'sol', mainAddress: process.env.MAIN_SOL_WALLET },
-  { coinName: 'bch', mainAddress: process.env.MAIN_BCH_WALLET },
-  { coinName: 'trx/usdt', mainAddress: process.env.MAIN_TRX_USDT_WALLET },
+  // { coinName: 'usdt', mainAddress: process.env.MAIN_USDT_WALLET },
+  // { coinName: 'bch', mainAddress: process.env.MAIN_BCH_WALLET },
+  // { coinName: 'trx/usdt', mainAddress: process.env.MAIN_TRX_USDT_WALLET },
 ]

@@ -1,5 +1,5 @@
 import { NextFunction, Response, Request } from 'express';
-import { AuthService } from 'src/service/auth.service';
+import { AuthService } from '../service/auth.service';
 
 export default async function validateAccessKey(req: Request, res: Response, next: NextFunction): Promise<void> {
   console.log('request headers => ', req.headers);

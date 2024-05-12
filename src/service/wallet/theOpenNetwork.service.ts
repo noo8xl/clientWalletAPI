@@ -1,32 +1,35 @@
-import TonWeb from "tonweb";
-import { WalletContractV4 } from "ton";
-import { mnemonicNew, mnemonicToPrivateKey } from "ton-crypto";
+// import TonWeb from "tonweb";
+import { WalletContractV4, TonClient, Address } from "@ton/ton";
+import { mnemonicNew , KeyPair, mnemonicToWalletKey } from "ton-crypto";
 import {Wallet} from "./wallet.service";
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet.types";
-import { getCoinApiName } from "src/crypto.lib/lib.helper/getCoinApiName";
+
 import axios from "axios";
-
-
+import { Helper } from "../../helpers/helper";
+// import { Address } from "ton";
 
 export class TheOpenNetworkService extends Wallet {
   coinName: string
   private userId: string
-  private address: string
+  private address: Address
+  private readonly network: string = "testnet"
+  // private readonly network: string = "mainnet"
+  private readonly helper: Helper = new Helper()
+  private readonly client: TonClient = new TonClient({endpoint: this.network})
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
     this.userId = dto.userId
     this.coinName = dto.coinName
-    this.address = dto.address
+    this.address = dto.addressT
   }
 
 
   async createWallet(): Promise<string> {
-    // https://github.com/toncenter/tonweb
-    // https://ton-community.github.io/ton/
+    // https://ton-community.github.io/tutorials/01-wallet/ 
 
-    let mnemonics = await mnemonicNew();
-    let keyPair = await mnemonicToPrivateKey(mnemonics);
+    const mnemonics: string[] = await mnemonicNew();
+    const keyPair: KeyPair = await mnemonicToWalletKey(mnemonics);
 
     // Create wallet contract
     let workchain: number = 0; // Usually you need a workchain 0
@@ -45,8 +48,7 @@ export class TheOpenNetworkService extends Wallet {
   }
 
   async getBalance(): Promise<number> {
-    const tonWeb = new TonWeb()
-    const balance = await tonWeb.getBalance(this.address)
+    const balance: bigint = await this.client.getBalance(this.address)
     console.log('balance => ', balance);    
     return Number(balance)
   }
@@ -58,10 +60,7 @@ export class TheOpenNetworkService extends Wallet {
 
   async sendTransaction(): Promise<string> {
 
-    // https://ton-community.github.io/tutorials/01-wallet/ 
-
     const rate: RATE_DATA = await this.getRate()
-  
     const cryptoValToFiat: number = rate.fiatValue * rate.coinBalance
     console.log('cryptoValToFiat => ', cryptoValToFiat);
     // const notifData: string = 
@@ -106,7 +105,7 @@ export class TheOpenNetworkService extends Wallet {
 
   async getRate(): Promise<RATE_DATA> {
     let rateData: RATE_DATA;
-    const coinNameForUrl: string = await getCoinApiName(this.coinName)
+    const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
     const fiatName: string = "" // await db get user details (fiat name )
 
     const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`

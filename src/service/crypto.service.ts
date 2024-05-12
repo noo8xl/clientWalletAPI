@@ -1,38 +1,46 @@
-import ApiError from "../exceptions/apiError";
-import { TSX_DATA } from "../types/wallet/transactionData.interface";
-import { BitcoinService } from './wallet/bitcoin.service';
-import { WALLET_REQUEST_DTO, WALLET_TYPE } from 'src/types/wallet/wallet.types';
-import { coinList } from '../crypto.lib/lib.helper/coinList'
 
+import { coinList } from "../config/configs";
+import ApiError from "../exceptions/apiError";
+import { BitcoinService } from './wallet/bitcoin.service';
+import { WALLET_REQUEST_DTO, WALLET_TYPE } from '../types/wallet/wallet.types';
+import { EthereumService } from "./wallet/ethereum.service";
+import { TronService } from "./wallet/tron.service";
+import { TheOpenNetworkService } from "./wallet/theOpenNetwork.service";
+import { SolanaService } from "./wallet/solana.service";
 
 
 export class CryptoService {
-  private coinName: string
-  private dto: WALLET_REQUEST_DTO; // for the new instance init 
+  private dto: WALLET_REQUEST_DTO; // for the new service instance init 
   private wt: WALLET_TYPE;
 
   constructor(payload: WALLET_REQUEST_DTO) {
-    this.coinName = payload.coinName
     this.dto = payload
   }
 
   // generateOneTimeAddressByCoinName -> generate address in chosen blockchain
   public async generateOneTimeAddressByCoinName(): Promise<string> {
 
-    switch (this.coinName) {
+    switch (this.dto.coinName) {
       case coinList[0]:
         this.wt = new BitcoinService(this.dto)
-        return await this.wt.createWallet()
-      // case coinList[1]:
-      //   return await this.genWalletInEthereumNetwork()
-      // case coinList[2]:
-      //   return await this.genWalletInTronNetwork()
-      // case coinList[3]:
-      //   return await this.genWalletInTheOpenNetwork()
+        break;
+      case coinList[1]:
+        this.wt = new EthereumService(this.dto)
+        break;
+      case coinList[2]:
+        this.wt = new TronService(this.dto)
+        break;
+      case coinList[3]:
+        this.wt = new TheOpenNetworkService(this.dto)
+        break;
+      case coinList[4]:
+        this.wt = new SolanaService(this.dto)
+        break;
       default:
         throw await ApiError.BadRequest('unknown coin name at address gen')
     }
-    
+
+    return await this.wt.createWallet()
   }
 
   // createUserWalletsList -> create wallet for current user in each available blockchain
@@ -48,39 +56,47 @@ export class CryptoService {
   // getBalance -> get wallet balance by  address in chosen blockchain
   public async getBalance(): Promise<number> {
 
-    switch (this.coinName) {
+    switch (this.dto.coinName) {
       case coinList[0]:
         this.wt = new BitcoinService(this.dto)
-        return await this.wt.getBalance()
-      // case coinList[1]:
-      //   return this.SendEthereumTransaction(transactionDetails)
-      // case coinList[2]:
-      //   return this.SendTronTransaction(transactionDetails)
-      // case coinList[3]:
-      //   return this.SendSolanaTransaction(transactionDetails)
+        break;
+      case coinList[1]:
+        this.wt = new EthereumService(this.dto)
+        break;
+      case coinList[2]:
+        this.wt = new TronService(this.dto)
+        break;
+      case coinList[3]:
+        this.wt = new TheOpenNetworkService(this.dto)
+        break;
       default:
-        throw await ApiError.BadRequest()
+        throw await ApiError.BadRequest('recieved unknown coin name or address')
     }
+
+    return await this.wt.getBalance()
   }
   
   // sendManualTransaction -> send manual transaction with received data in chosen blockchain
   public async sendManualTransaction(): Promise<string> {
 
-
-
-    switch (this.coinName) {
+    switch (this.dto.coinName) {
       case coinList[0]:
         this.wt = new BitcoinService(this.dto)
-        return await this.wt.sendTransaction()
-      // case coinList[1]:
-      //   return this.SendEthereumTransaction(transactionDetails)
-      // case coinList[2]:
-      //   return this.SendTronTransaction(transactionDetails)
-      // case coinList[3]:
-      //   return this.SendSolanaTransaction(transactionDetails)
+        break;
+      case coinList[1]:
+        this.wt = new EthereumService(this.dto)
+        break;
+      case coinList[2]:
+        this.wt = new TronService(this.dto)
+        break;
+      case coinList[3]:
+        this.wt = new TheOpenNetworkService(this.dto)
+        break;
       default:
         throw await ApiError.BadRequest(`can't send transaction in unknown network or unavailable coin.`)
     }
+
+    return await this.wt.sendTransaction()
   }
 
   // ============================================================================================================= //

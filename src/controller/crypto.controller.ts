@@ -1,6 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { TSX_DATA } from '../types/wallet/transactionData.interface';
-import { GetDomainNameFromOrigin } from '../crypto.lib/lib.helper/getDomainName.helper';
 import { CryptoService } from "../service/crypto.service";
 import { WALLET_REQUEST_DTO } from '../types/wallet/wallet.types';
 
