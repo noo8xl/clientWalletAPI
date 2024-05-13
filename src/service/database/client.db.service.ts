@@ -4,9 +4,11 @@ import { MongoClient } from "mongodb";
 import { CustomerDatabaseCore } from "./db.customer.core";
 import { TelegramNotificationApi } from "../../api/notificationCall.api";
 import { Helper } from "../../helpers/helper";
+import { CUSTOMER } from "../../types/database/customer.types";
+import { CustomerDb } from "./database.service";
 
 
-export class CustomerDatabaseService {
+export class CustomerDatabaseService  {
   private readonly mongoUri: string = MONGO_DB.uri
   private readonly dbUser: string = MONGO_DB.userName
   private readonly dbPassword: string = MONGO_DB.userPassword
@@ -17,21 +19,14 @@ export class CustomerDatabaseService {
   private readonly notificator: TelegramNotificationApi = new TelegramNotificationApi()
   private readonly helper: Helper = new Helper()
 
-  constructor() {
-    this.initConnection()
+  constructor() { 
+    // super()
+    this.initConnection() 
   }
 
-  public async isUserExists(): Promise<boolean> {
-    let filter: any = {
-      userEmail: this.user
-    }
-
-    return true
-  }
-
-  public async findUserByFilter(): Promise<DB_SELECT_RESPONSE>{
+  // findUserByFilter -> find user data by dto object filter ex => {userId: '123', userEmail: 'ex@mail.net'}
+  public async findUserByFilter(filter: any): Promise<DB_SELECT_RESPONSE>{
     let c: DB_SELECT_RESPONSE;
-    let filter: any = {}
     
     await this.helper.validateObject(filter)
     this.dbInteract = new CustomerDatabaseCore(this.db, this.dbName, filter)
@@ -41,17 +36,16 @@ export class CustomerDatabaseService {
     return c
   }
 
-  // saveNewClient -> save new api user to db using mongoDB
-	public async saveNewClient(): Promise<DB_INSERT_RESPONSE>  {
-		// add here field {fiatName: string}  // -> AUD, AED, RUB, EUR, USD  --- > default = USD 
-    let filter: any = {}
+  
 
-    await this.helper.validateObject(filter)
-    this.dbInteract = new CustomerDatabaseCore(this.db, this.dbName, filter)
-    this.dbInteract.insertData()
+  // saveNewClient -> save new api user to db using mongoDB
+	public async saveNewClient(userDto: CUSTOMER ): Promise<void>  {
+    await this.helper.validateObject(userDto)
+
+    this.dbInteract = new CustomerDatabaseCore(this.db, this.dbName, userDto)
+    await this.dbInteract.insertData()
 
     await this.disconnectClient()
-		return null
 	}
 
   // ============================================================================================================= //

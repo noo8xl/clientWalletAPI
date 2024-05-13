@@ -9,8 +9,6 @@ import {
 	NOTIFICATION_API_PATH,
 	ERR_CHAT_ID
 } from "../config/configs"
-import { Database } from "src/service/database/database.service"
-
 
 export class TelegramNotificationApi {
   private readonly apiKey = NOTIFICATION_API_KEY
