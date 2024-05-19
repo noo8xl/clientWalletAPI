@@ -8,19 +8,17 @@ export abstract class Wallet {
     this.coinName = coinName
   }
 
-  abstract createWallet(): Promise<string>;
-  abstract getWallet(): Promise<WALLET>;
-  abstract getBalance(): Promise<number>;
-  abstract sendTransaction(): Promise<string>;
-  abstract getTransactionInfo(): Promise<any>;
+  public abstract createWallet(): Promise<string>;
+  public abstract getWallet(): Promise<WALLET>;
+  public abstract getBalance(): Promise<number>;
+  public abstract sendTransaction(): Promise<string>;
+  public abstract getTransactionInfo(): Promise<any>;
 
-  abstract getRate(): Promise<RATE_DATA>;
+  public abstract getRate(): Promise<RATE_DATA>;
 
   // hasBalance : bool 
   // used: bool
   // balance: int
-  // 
-  //
-  //
+
 }
 

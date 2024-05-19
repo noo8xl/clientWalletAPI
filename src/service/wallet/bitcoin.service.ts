@@ -24,7 +24,7 @@ export class BitcoinService extends Wallet {
   }
 
 
-  async createWallet(): Promise<string> {
+  public async createWallet(): Promise<string> {
     // https://javascript.plainenglish.io/generate-your-own-bitcoin-wallet-within-5-minutes-3c36176b47ee?gi=c00ebff5e60f
     // https://github.com/bitpay/bitcore/tree/master/packages/bitcore-lib
     // https://github.com/BitGo/BitGoJS/tree/master/modules/utxo-lib
@@ -79,7 +79,7 @@ export class BitcoinService extends Wallet {
     return wt.address
   }
 
-  async getBalance(): Promise<number> {
+  public async getBalance(): Promise<number> {
 
     const coinData: any = await axios(`https://blockchain.info/balance?active=${this.address}`)
       .then((res) => { return { balanceData: res.data, status: res.status }})
@@ -110,7 +110,7 @@ export class BitcoinService extends Wallet {
     return ""
   }
 
-  async sendTransaction(): Promise<string> {
+  public async sendTransaction(): Promise<string> {
     const rate: RATE_DATA = await this.getRate()
   
     const cryptoValToFiat: number = rate.fiatValue * rate.coinBalance
@@ -134,7 +134,7 @@ export class BitcoinService extends Wallet {
     }
   }
 
-  async getRate(): Promise<RATE_DATA> {
+  public async getRate(): Promise<RATE_DATA> {
     let rateData: RATE_DATA;
     const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
     const fiatName: string = "" // await db get user details (fiat name )

@@ -15,16 +15,12 @@ class CryptoController {
 		}
 
 		const service: CryptoService = new CryptoService(dto)
-		try {
-			const address = await service.generateOneTimeAddressByCoinName()
+		const address: string = await service.generateOneTimeAddressByCoinName()
 
-			res.status(200)
-			res.json({coinName: dto.coinName, address: address})
-			res.end()
-			
-		} catch (e) {
-			next(e)
-		}
+		res.status(201)
+		res.json({coinName: dto.coinName, address: address})
+		res.end()
+
 	}
 
 
@@ -49,7 +45,7 @@ class CryptoController {
 		}
 	}
 	
-	async sendManualTransaction(req: Request, res: Response, next: NextFunction): Promise<void> {
+	async sendManualTransaction(req: Request, res: Response): Promise<void> {
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
 			coinName: req.params.coinName.toLowerCase().replace('-', '/'),
@@ -63,35 +59,12 @@ class CryptoController {
 		// -> if not - send msg as response 
 		// -> if yes -> sign tsx and send tsx info as response
 
-		try {
-			const tsx: string = await service.sendManualTransaction()
+		const tsx: string = await service.sendManualTransaction()
 
-			res.status(200)
-			res.json({transactionDetails: tsx})
-			res.end()
-
-			} catch (e) {
-			next(e)
-		}
+		res.status(200)
+		res.json({transactionDetails: tsx})
+		res.end()
 	}
-
-	// async checkAddress(req: Request, res: Response, next: NextFunction): Promise<Response> {
-	// 	let result: boolean;
-	// 	const dto = {
-	// 		coinName: null,
-	// 		userId: req.params.userId,
-	// 		address: req.params.address
-	// 	}
-	// 	const service = new CryptoService(dto)
-		
-	// 	try {
-	// 		result = await service.checkAddress()
-
-	// 		return res.status(200).json({result})
-	// 	} catch (e) {
-	// 		next(e)
-	// 	}
-	// }
 	
 
 	// ============================================================================================================= //

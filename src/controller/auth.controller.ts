@@ -4,28 +4,20 @@ import { AUTH_CLIENT_DTO } from "../types/auth/client.dto.type"
 import { AuthService } from "../service/auth.service"
 
 class AuthController {
+  private authService: AuthService
 
   async signUpNewClient(req: Request, res: Response): Promise<void> {
 
     const clientDto: AUTH_CLIENT_DTO = req.body
-    const service: AuthService = new AuthService(clientDto)
-    await service.signUpNewClient()
+    this.authService = new AuthService(clientDto)
+    await this.authService.signUpNewClient()
 
     res.status(201)
-      .json({message: "client successfully created"})
-      .end()
+    res.json({message: "client successfully created"})
+    res.end()
   }
 
   async revokeAnAccess(req: Request, res: Response, next: NextFunction): Promise<void>{
-
-    try {
-      
-    } catch (e: unknown) {
-      next(e)
-    }
-  }
-
-  async doSome(req: Request, res: Response, next: NextFunction): Promise<void>{
 
     try {
       

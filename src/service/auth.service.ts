@@ -15,6 +15,7 @@ export class AuthService {
   private companyName: string
   private userEmail: string
   private apiKey: string
+  private telegramId: number
 
   private readonly helper: Helper = new Helper()
   private readonly cacheService: CacheService = new CacheService()
@@ -26,7 +27,7 @@ export class AuthService {
     this.userEmail = clientDto.userEmail
     this.domainName = clientDto.domainName
     this.apiKey = clientDto.apiKey
-    
+    this.telegramId = clientDto.telegramId
   }
 
   public async signUpNewClient(): Promise<void> {
@@ -44,6 +45,7 @@ export class AuthService {
       companyName: this.companyName,
       apiKey: API_KEY,
       fiatName: "USD",
+      telegramId: this.telegramId,
       createdAt: stamp,
       updatedAt: stamp
     }
@@ -53,11 +55,11 @@ export class AuthService {
 
   // signInClient ->  validate user session use cache and api key 
   async signInClient(): Promise<void> {
-    const c: CACHE_DTO = await this.cacheService.getAuthData(this.apiKey)
+    let c: CACHE_DTO = await this.cacheService.getAuthData(this.apiKey)
     if(!c){
-      // filter - > {apiKey: this.apiKey}
-      const user: DB_SELECT_RESPONSE = await this.customerDb.findUserByFilter({apiKey: this.apiKey})
-      if (!user) throw await ApiError.NotFoundError('')
-    }
+      const filter: any = {apiKey: this.apiKey}
+      const candidate: DB_SELECT_RESPONSE = await this.customerDb.findUserByFilter(filter)
+      if (!candidate) throw await ApiError.PermissionDenied("User not found. Permission denied.")
+    } 
   }
 }

@@ -1,10 +1,11 @@
 
 import mysql from 'mysql2'
-import { ResultSetHeader, QueryError } from 'mysql2';
 import { TelegramNotificationApi } from '../../api/notificationCall.api';
 import { MYSQL_DB, coinList } from '../../config/configs';
-import { DB_SELECT_RESPONSE } from '../../types/database/db.response.types';
+import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from '../../types/database/db.response.types';
 import { WalletDatabaseCore } from './db.wallet.core';
+import { WALLET } from '../../types/wallet/wallet.types';
+
 
 export class WalletDatabaseService {
 	private db: mysql.Connection
@@ -16,64 +17,73 @@ export class WalletDatabaseService {
 	private dbInteract: WalletDatabaseCore
 	private readonly notificator: TelegramNotificationApi = new TelegramNotificationApi()
 
-
-	constructor() {
-		this.initConnection()
-	}
+	constructor() { this.initConnection() }
 
 
-  async insertData(): Promise<boolean>{
-    return false
-  }
-
-  async selectData(): Promise<DB_SELECT_RESPONSE> {
-    let c: DB_SELECT_RESPONSE;
-    return c
-  }
-
-  async updateData(): Promise<boolean> {
-    return false
-  }
-  async deleteData(): Promise<boolean>{
-    return false
-  }
-
-
-	// saveUserWallet -> save each wallet to db for current user and domain
-	public async saveUserWallet(walletArr: any): Promise<ResultSetHeader | QueryError> {
-		let result: ResultSetHeader | QueryError
+	// saveUserWallet -> save wallet to db for current user
+	public async saveUserWallet(walletDto: WALLET): Promise<DB_INSERT_RESPONSE> {
+		let result: DB_INSERT_RESPONSE;
 		const sql: string = `
-      INSERT INTO wallet_list 
-      ( coin_name, wallet_address, private_key, public_key, date_of_create, domain_name, user_id) 
+      INSERT INTO walletList 
+      ( coinName, address, privateKey, publicKey, balance, userId ) 
       VALUES 
-      (?, ?, ?, ?, ?, ?, ?)
+      (?, ?, ?, ?, ?, ?)
       `;
 
-		for(let i=0; i <= coinList.length -1; i++) {
-			const listOfValues: any[] = [
-				walletArr[i].coinName,
-				walletArr[i].address,
-				walletArr[i].privateKey,
-				walletArr[i].publicKey,
-				walletArr[i].dateOfCreate,
-				walletArr[i].domainName,
-				walletArr[i].userId,
+			const listOfValues = [
+				walletDto.userId,
+				walletDto.coinName,
+				walletDto.address,
+				walletDto.privateKey,
+				walletDto.publicKey,
+				walletDto.balance,
 			]
-			this.dbInteract = new WalletDatabaseCore(this.db, sql, listOfValues)
-			result = await this.dbInteract.insertData()
-		}
+
+		this.dbInteract = new WalletDatabaseCore(this.db, sql, listOfValues)
+		result = await this.dbInteract.insertData()
+		
 		this.closeConnection()
 		return result
 	}
 
-  async getWalletSecretKey(address: string, coinName: string): Promise<DB_SELECT_RESPONSE>  {
+	// // saveUserWallet -> save each wallet to db for current user and domain
+	// public async saveUserWallet(walletArr: WALLET): Promise<ResultSetHeader | QueryError> {
+	// 	let result: ResultSetHeader | QueryError
+	// 	const sql: string = `
+	// 		INSERT INTO wallet_list 
+	// 		( coin_name, wallet_address, private_key, public_key, date_of_create, domain_name, user_id) 
+	// 		VALUES 
+	// 		(?, ?, ?, ?, ?, ?, ?)
+	// 		`;
+
+	// 	for(let i=0; i <= coinList.length -1; i++) {
+	// 		const listOfValues: any[] = [
+	// 			walletArr[i].coinName,
+	// 			walletArr[i].address,
+	// 			walletArr[i].privateKey,
+	// 			walletArr[i].publicKey,
+	// 			walletArr[i].dateOfCreate,
+	// 			walletArr[i].domainName,
+	// 			walletArr[i].userId,
+	// 		]
+	// 		this.dbInteract = new WalletDatabaseCore(this.db, sql, listOfValues)
+	// 		result = await this.dbInteract.insertData()
+	// 	}
+		
+	// 	this.closeConnection()
+	// 	return result
+	// }
+
+
+	// getWalletPrivateKey -> get private key to sign and send transaction
+  async getWalletPrivateKey(address: string, coinName: string): Promise<DB_SELECT_RESPONSE>  {
 		let result: DB_SELECT_RESPONSE;
 
 		const sql: string = `
-			SELECT private_key, public_key
-			FROM wallet_list
-			WHERE wallet_address = ?
-			AND coin_name = ?
+			SELECT privateKey, 
+			FROM walletList
+			WHERE address = ?
+			AND coinName = ?
 			`;
 
 		this.dbInteract = new WalletDatabaseCore(this.db, sql, [address, coinName])

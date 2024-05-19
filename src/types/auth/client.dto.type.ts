@@ -5,4 +5,5 @@ export type AUTH_CLIENT_DTO = {
   userEmail?: string
   companyName?: string
   apiKey?: string
+  telegramId?: number
 }

@@ -16,7 +16,7 @@ export default async function validateAccessKey(req: Request, res: Response, nex
     }
 
     await authService.signInClient()
-    console.log('access granted');
+    // console.log('access granted');
     next()
   } catch (e: unknown) {
     next(e)

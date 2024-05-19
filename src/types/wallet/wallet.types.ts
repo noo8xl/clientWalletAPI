@@ -64,7 +64,7 @@ export type RATE_DATA = {
 }
 export type WALLET_REQUEST_DTO = {
   userId: string
-  coinName: string  // "btc" | "etc" | "trx" | "ton"
+  coinName: string  // "btc" | "etc" | "trx" | "ton" | "sol"
   address?: string
   addressT?: Address
 }
