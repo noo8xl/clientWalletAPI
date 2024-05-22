@@ -1,42 +1,48 @@
-// import telegram from '../api/telegram_api'
+import { TelegramNotificationApi } from '../api/notificationCall.api'
+import { Response } from 'express'
 
-export default class ApiError extends Error {
+// ApiError -> handle an API errors 
+export class ApiError {
+  name: string
   message: string
-  status: number
-  errors: string[]
+  error: string
 
-  constructor(status?: number, message?: string, errors: string[] = []) {
-    super(message)
-    this.message = message
-    this.status = status
-    this.errors = errors
-  }
+  private readonly res: Response
+  private readonly notification: TelegramNotificationApi = new TelegramNotificationApi()
 
-  static async UnauthorizedError(): Promise<ApiError> {
-    return new ApiError(401, 'unauthorized user')
+  public async UnauthorizedError(): Promise<void> {
+    this.res.status(401)
+    this.res.json({message: "Unauthorized error."})
+    this.res.end()
   }
 
   //res?: express.Response,
-  static async PermissionDenied(action: string): Promise<ApiError> {
-    // const sendErr: boolean  = await telegram.sendErrorData(403, action)
-    // console.log('telegram api status => ', sendErr);
-    return new ApiError(403, 'permission denied')
+  public async PermissionDenied(action: string): Promise<void> {
+    await this.notification.sendErrorMessage(`Catch permission denied error at ${action}.`)
+    this.res.status(403)
+    this.res.json({message: "Permission denied."})
+    this.res.end()
+    // throw new Error("Permission denied.")
   }
 
-  static async BadRequest(message?: string): Promise<ApiError> {
-    return new ApiError(400, 'bad request')
+  public async BadRequest(action?: string): Promise<void> {
+    await this.notification.sendErrorMessage(`Catch an error. ${action}.`)
+    this.res.status(400)
+    this.res.json({message: "Bad request."})
+    this.res.end()
   }
 
-  static async ServerError(action: string): Promise<ApiError> {
-    // const sendErr: boolean = await telegram.sendErrorData(500, `${action} was failed.`)
-    // console.log('telegram api status => ', sendErr);
-    return new ApiError(500, 'internal server error')
+  public async ServerError(action: string): Promise<void> {
+    await this.notification.sendErrorMessage(`${action} was failed.`)
+    this.res.status(500)
+    this.res.json({message: "Internal server error."})
+    this.res.end()
   }
 
-  static async NotFoundError(action: string) {
-    // const sendErr: boolean = await telegram.sendErrorData(500, `${action} was failed.`)
-    // console.log('telegram api status => ', sendErr);
-    return new ApiError(404, `can't find any ${action} data`)
+  public async NotFoundError(): Promise<void> {
+    this.res.status(404)
+    this.res.json({message: "Not found."})
+    this.res.end()
   }
 
   // ############################################################################################## //

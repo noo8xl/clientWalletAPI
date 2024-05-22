@@ -51,8 +51,8 @@ export class SolanaService extends Wallet {
       userId: this.userId,
       coinName: "Solana",
       address: programAddressFromKey.toString(),
-      privateKey: accountFromSecret.secretKey,
-      publicKey: accountFromSecret.publicKey,
+      privateKey: accountFromSecret.secretKey.toString(),
+      publicKey: accountFromSecret.publicKey.toString(),
       balance: 0,
     }
 

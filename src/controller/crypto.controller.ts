@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { CryptoService } from "../service/crypto.service";
+import { CryptoService } from "../service/crypto/crypto.service";
 import { WALLET_REQUEST_DTO } from '../types/wallet/wallet.types';
 
 

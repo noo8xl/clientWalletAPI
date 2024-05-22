@@ -13,18 +13,13 @@ router.put(
 	'/auth/signUp/',
 	authController.signUpNewClient)
 
-// delete valid user data to revoke an access to the API
-router.patch(
-	'/auth/revoke-an-access/:userId/',
-	validateAccessKey,
-	authController.revokeAnAccess)
-
+	
 
 // ################# customer area ####################
 	
 // change fiat currency to display at balance
 router.patch(
-	'/wallet/change-currency-display-type/:coinName/:address/',
+	'/wallet/change-currency-display-type/:userId/:fiatName/',
 	validateAccessKey,
 	customerController.changeFiatCurrencyDisplay)
 
@@ -33,6 +28,12 @@ router.get(
 	'/wallet/get-actions-log/:userId/:skip/:limit/',
 	validateAccessKey,
 	customerController.getActionsLog)
+
+// delete valid user data to revoke an access to the API
+router.patch(
+	'/auth/revoke-an-access/:userId/',
+	validateAccessKey,
+	customerController.revokeAnAccess)
 
 
 

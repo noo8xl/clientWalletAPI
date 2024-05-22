@@ -1,10 +1,11 @@
 import { availableCoins } from "../config/configs";
-import ApiError from "../exceptions/apiError";
+import { ApiError } from "../exceptions/apiError";
 
 
 export class Helper {
+  private readonly errorHandler: ApiError = new ApiError()
 
-  constructor(){}
+  // constructor(){}
 
   //getDomainNameFromOrigin -> get domain name
   async getOriginName(origin: string): Promise<string> {
@@ -15,7 +16,7 @@ export class Helper {
   // validateObject -> validate if object keu has an undefined value 
   async validateObject(obj: any): Promise<void> {
       for (let i in obj) 
-        if (obj[i] === undefined) throw await ApiError.BadRequest("Found an undefined value")
+        if (obj[i] === undefined) throw await this.errorHandler.BadRequest("Found an undefined value")
   }
   
   //getCoinApiName -> get coin full name from coinName to use in API request at getRate *
@@ -28,7 +29,7 @@ export class Helper {
         return availableCoins[i].coinApiName
       }
     }
-    throw await ApiError.NotFoundError('coin name for api')
+    throw await this.errorHandler.NotFoundError()
   }
 
 
@@ -43,13 +44,15 @@ export class Helper {
     randPasswordArray[1] = upperChars;
     randPasswordArray[2] = lowerChars;
     randPasswordArray = randPasswordArray.fill(allChars, 3);
-    const result: string = this.shuffleArray(randPasswordArray.map(function (x) { return x[Math.floor(Math.random() * x.length)] })).join('');
+    const result: string = this.shuffleAnArray(randPasswordArray.map(function (x) { return x[Math.floor(Math.random() * x.length)] })).join('');
     return result
   }
 
+  public async prepareCacheData(dto: any): Promise<any>{}
+
   ////////// -----------------------------------
 
-  private shuffleArray(array: string[]) {
+  private shuffleAnArray(array: string[]) {
     for (let i = array.length - 1; i > 0; i--) {
       let j = Math.floor(Math.random() * (i + 1));
       let temp = array[i];
@@ -58,6 +61,8 @@ export class Helper {
     }
     return array;
   }
+  
+
   
 }
 

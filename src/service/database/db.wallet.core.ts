@@ -1,7 +1,7 @@
 import mysql, { ResultSetHeader, QueryError, RowDataPacket } from 'mysql2'
 
 import {TelegramNotificationApi} from '../../api/notificationCall.api';
-import ApiError from '../../exceptions/apiError';
+import { ApiError } from '../../exceptions/apiError';
 import { Database } from './database.service';
 import { DB_INSERT_RESPONSE } from '../../types/database/db.response.types';
 
@@ -12,6 +12,7 @@ export class WalletDatabaseCore extends Database {
   private values: any
 
   private readonly notificator: TelegramNotificationApi = new TelegramNotificationApi()
+  private readonly errorHandler: ApiError = new ApiError()
 
   constructor(db: mysql.Connection, sql: string, values: any){
     super(db)
@@ -35,7 +36,7 @@ export class WalletDatabaseCore extends Database {
         )
 				})
 		} catch (e) {
-			throw await ApiError.ServerError("insertion was failed.")
+			throw await this.errorHandler.ServerError("Wallet DB insertion")
 		}
   }
 
@@ -56,7 +57,7 @@ export class WalletDatabaseCore extends Database {
       })
       
     } catch (e) {
-      throw await ApiError.ServerError("selection was failed.")
+      throw await this.errorHandler.ServerError("Wallet DB selection")
     }
 
   }

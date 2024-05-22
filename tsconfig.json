@@ -19,6 +19,4 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true
   }
-
-  
 }

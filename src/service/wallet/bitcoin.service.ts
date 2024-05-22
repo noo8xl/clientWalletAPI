@@ -53,9 +53,9 @@ export class BitcoinService extends Wallet {
       userId:  this.userId,
       coinName: "Bitcoin",
       address: btcAddress,
-      privateKey: node.privateKey,
-      publicKey: node.publicKey,
-      seedPhrase: seed,
+      privateKey: node.privateKey.toString(),
+      publicKey: node.publicKey.toString(),
+      seedPhrase: seed.toString(),
       mnemonic: node.toWIF(),
       balance: 0,
     }

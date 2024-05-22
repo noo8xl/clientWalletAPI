@@ -1,7 +1,7 @@
 
 import { Request, Response, NextFunction } from "express"
 import { AUTH_CLIENT_DTO } from "../types/auth/client.dto.type"
-import { AuthService } from "../service/auth.service"
+import { AuthService } from "../service/auth/auth.service"
 
 class AuthController {
   private authService: AuthService
@@ -15,15 +15,6 @@ class AuthController {
     res.status(201)
     res.json({message: "client successfully created"})
     res.end()
-  }
-
-  async revokeAnAccess(req: Request, res: Response, next: NextFunction): Promise<void>{
-
-    try {
-      
-    } catch (e: unknown) {
-      next(e)
-    }
   }
 
 }

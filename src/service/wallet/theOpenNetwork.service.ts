@@ -3,15 +3,13 @@ import { WalletContractV4, TonClient, Address } from "@ton/ton";
 import { mnemonicNew , KeyPair, mnemonicToWalletKey } from "ton-crypto";
 import {Wallet} from "./wallet.service";
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet.types";
-
-import axios from "axios";
 import { Helper } from "../../helpers/helper";
-// import { Address } from "ton";
+import axios from "axios";
 
 export class TheOpenNetworkService extends Wallet {
   coinName: string
   private userId: string
-  private address: Address
+  private address: string
   private readonly network: string = "testnet"
   // private readonly network: string = "mainnet"
   private readonly helper: Helper = new Helper()
@@ -21,7 +19,7 @@ export class TheOpenNetworkService extends Wallet {
     super(dto.coinName)
     this.userId = dto.userId
     this.coinName = dto.coinName
-    this.address = dto.addressT
+    this.address = dto.address
   }
 
 
@@ -38,9 +36,9 @@ export class TheOpenNetworkService extends Wallet {
     const wt: WALLET = {
       userId: this.userId,
       coinName: "TheOpenNetwork",
-      address: String(wallet.address),
-      privateKey: keyPair.secretKey,
-      publicKey: keyPair.publicKey,
+      address: wallet.address.toString(),
+      privateKey: keyPair.secretKey.toString(),
+      publicKey: keyPair.publicKey.toString(),
       balance: 0,
     }
 
@@ -48,7 +46,7 @@ export class TheOpenNetworkService extends Wallet {
   }
 
   async getBalance(): Promise<number> {
-    const balance: bigint = await this.client.getBalance(this.address)
+    const balance: bigint = await this.client.getBalance(Address.parse(this.address))
     console.log('balance => ', balance);    
     return Number(balance)
   }

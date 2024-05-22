@@ -24,20 +24,26 @@ export class WalletDatabaseService {
 	public async saveUserWallet(walletDto: WALLET): Promise<DB_INSERT_RESPONSE> {
 		let result: DB_INSERT_RESPONSE;
 		const sql: string = `
-      INSERT INTO walletList 
-      ( coinName, address, privateKey, publicKey, balance, userId ) 
+      INSERT INTO WalletList 
+      ( coinName, address, privateKey, publicKey, seedPhrase, mnemonic, userId ) 
       VALUES 
-      (?, ?, ?, ?, ?, ?)
-      `;
+      (?, ?, ?, ?, ?, ?, ?)
+    `;
 
-			const listOfValues = [
-				walletDto.userId,
-				walletDto.coinName,
-				walletDto.address,
-				walletDto.privateKey,
-				walletDto.publicKey,
-				walletDto.balance,
-			]
+		let listOfValues = [
+			walletDto.coinName,
+			walletDto.address,
+			walletDto.privateKey,
+			walletDto.publicKey,
+			"",
+			"",
+			walletDto.userId,
+		]
+
+		if ( walletDto.seedPhrase !== "" && walletDto.mnemonic !== "") {
+			listOfValues[4] = walletDto.seedPhrase
+			listOfValues[5] = walletDto.mnemonic
+		}
 
 		this.dbInteract = new WalletDatabaseCore(this.db, sql, listOfValues)
 		result = await this.dbInteract.insertData()
@@ -81,15 +87,15 @@ export class WalletDatabaseService {
 
 		const sql: string = `
 			SELECT privateKey, 
-			FROM walletList
+			FROM WalletList
 			WHERE address = ?
 			AND coinName = ?
-			`;
+		`;
 
 		this.dbInteract = new WalletDatabaseCore(this.db, sql, [address, coinName])
 		result = await this.dbInteract.selectData()
-		this.closeConnection()
 
+		this.closeConnection()
 		return result
 	}
 
@@ -183,7 +189,7 @@ export class WalletDatabaseService {
 		})
 
 		this.db.connect(async (err: mysql.QueryError | null) => {
-			if (err) return await this.notificator.sendErrorMessage(err.message)
+			if (err) return await this.notificator.sendErrorMessage("Wallet DB connection")
 			return console.log('mysql database was connected.')
 		})
 

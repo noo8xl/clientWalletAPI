@@ -4,7 +4,10 @@ import { MongoClient } from "mongodb";
 import { CustomerDatabaseCore } from "./db.customer.core";
 import { TelegramNotificationApi } from "../../api/notificationCall.api";
 import { Helper } from "../../helpers/helper";
-import { CUSTOMER } from "../../types/database/customer.types";
+import { CUSTOMER, CUSTOMER_ACTION } from "../../types/customer/customer.types";
+import { CacheService } from "../cache/cache.service";
+import { CACHE_DTO } from "../../types/cache/cache.types";
+import { CustomerServise } from "../customer/customer.service";
 
 
 export class CustomerDatabaseService {
@@ -13,10 +16,14 @@ export class CustomerDatabaseService {
   private readonly dbPassword: string = MONGO_DB.userPassword
   private readonly dbName: string = MONGO_DB.databaseName
   private db: MongoClient
+  private readonly stamp: number = new Date().getTime()
 
   private dbInteract: CustomerDatabaseCore
-  private readonly notificator: TelegramNotificationApi = new TelegramNotificationApi()
   private readonly helper: Helper = new Helper()
+  private readonly cacheService: CacheService = new CacheService()
+  private readonly notificator: TelegramNotificationApi = new TelegramNotificationApi()
+  private readonly customerService: CustomerServise = new CustomerServise()
+
 
   constructor() { this.initConnection() }
 
@@ -37,12 +44,58 @@ export class CustomerDatabaseService {
   // saveNewClient -> save new api user to db using mongoDB
 	public async saveNewClient(userDto: CUSTOMER ): Promise<void>  {
     await this.helper.validateObject(userDto)
+    let expiredAt: number = this.stamp + 600_000
 
     this.dbInteract = new CustomerDatabaseCore(this.db, this.dbName, userDto)
-    await this.dbInteract.insertData()
+    let result: DB_INSERT_RESPONSE = await this.dbInteract.insertData()
+    // console.log("inserted result is -> ", result);
+    
+    const actionLog: CUSTOMER_ACTION = {
+      userId: String(result),
+      date: this.stamp,
+      status: "success",
+      action: "Customer has been successfully registred."
+    }
 
+    const cache: CACHE_DTO = { 
+      userId: result.toString(), 
+      apiKey: userDto.apiKey,
+      sessionExpired: expiredAt 
+    }
+
+    await this.cacheService.setSessionData(cache)
+    await this.customerService.setActionsData(actionLog)
     await this.disconnectClient()
 	}
+
+  public async updateCustomerProfile(userDto: any): Promise<void> {
+
+    this.dbInteract = new CustomerDatabaseCore(this.db, this.dbName, userDto)
+    // let result: DB_INSERT_RESPONSE = await this.dbInteract.updateData()
+
+//
+//
+//
+//
+//
+//
+//
+//
+
+//
+    // status depends on db result 
+    // updated data isn't the same  -> success else -> failed
+
+    const actionLog: CUSTOMER_ACTION = {
+      userId: userDto.userId,
+      date: this.stamp,
+      status: "success",
+      action: "Customer has been successfully registred."
+    }
+   
+    await this.customerService.setActionsData(actionLog)
+    await this.disconnectClient()
+  }
 
   // ============================================================================================================= //
   // ############################################# private usage area ############################################ //
@@ -51,6 +104,7 @@ export class CustomerDatabaseService {
 
   private async initConnection(): Promise<void> {
     const uri: string = await this.getMongoUri()
+    if (!uri) throw await this.notificator.sendErrorMessage("Customer DB connection")
     this.db = new MongoClient(uri)
   }
 

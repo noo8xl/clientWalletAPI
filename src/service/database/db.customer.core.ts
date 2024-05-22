@@ -1,13 +1,15 @@
 import { MongoClient } from "mongodb";
 import { Database } from "./database.service";
 import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "../../types/database/db.response.types";
-import ApiError from "../../exceptions/apiError";
+import { ApiError } from "../../exceptions/apiError";
 
 export class CustomerDatabaseCore extends Database {
   db: MongoClient
   dbName: string
-  private readonly collectionName: string = "Customer"
   private filter: any
+  private readonly collectionName: string = "Customer" // col are customer and logs ---> how to sole ?
+  private readonly errorHandler: ApiError = new ApiError()
+  
 
   constructor(db: MongoClient, dbName: string, filter: any) {
     super(db)
@@ -23,7 +25,7 @@ export class CustomerDatabaseCore extends Database {
     try {
       c = await colection.insertOne(this.filter)
     } catch (e) {
-      throw await ApiError.ServerError(e.message)
+      throw await this.errorHandler.ServerError("Customer DB insertion")
     }
     return c.insertedId.toString()
   }

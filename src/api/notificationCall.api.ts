@@ -75,9 +75,4 @@ export class TelegramNotificationApi {
 
 	}
 
-	// some func
-	private async doSome() {
-		return
-	}
-
-}
+};

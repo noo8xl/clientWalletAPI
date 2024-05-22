@@ -1,17 +1,19 @@
 
-import { coinList } from "../config/configs";
-import ApiError from "../exceptions/apiError";
-import { BitcoinService } from './wallet/bitcoin.service';
-import { WALLET_REQUEST_DTO, WALLET_TYPE } from '../types/wallet/wallet.types';
-import { EthereumService } from "./wallet/ethereum.service";
-import { TronService } from "./wallet/tron.service";
-import { TheOpenNetworkService } from "./wallet/theOpenNetwork.service";
-import { SolanaService } from "./wallet/solana.service";
+import { coinList } from "../../config/configs";
+import { ApiError } from "../../exceptions/apiError";
+import { BitcoinService } from '../wallet/bitcoin.service';
+import { WALLET_REQUEST_DTO, WALLET_TYPE } from '../../types/wallet/wallet.types';
+import { EthereumService } from "../wallet/ethereum.service";
+import { TronService } from "../wallet/tron.service";
+import { TheOpenNetworkService } from "../wallet/theOpenNetwork.service";
+import { SolanaService } from "../wallet/solana.service";
 
 
 export class CryptoService {
   private dto: WALLET_REQUEST_DTO; // for the new service instance init 
   private wt: WALLET_TYPE;
+
+  private readonly errorHandler: ApiError = new ApiError()
 
   constructor(payload: WALLET_REQUEST_DTO) {
     this.dto = payload
@@ -73,7 +75,7 @@ export class CryptoService {
         this.wt = new SolanaService(this.dto)
         break;
       default:
-        throw await ApiError.BadRequest(`can't send transaction in unknown network or unavailable coin.`)
+        throw await this.errorHandler.BadRequest(`Can't send transaction in unknown ${this.dto.coinName} network or unavailable coin.`)
     }
 
   }
