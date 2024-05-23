@@ -15,8 +15,10 @@ export class Helper {
 
   // validateObject -> validate if object keu has an undefined value 
   async validateObject(obj: any): Promise<void> {
-      for (let i in obj) 
+      for (let i in obj) {
         if (obj[i] === undefined) throw await this.errorHandler.BadRequest("Found an undefined value")
+        if (typeof obj[i] === "object") await this.validateObject(obj[i])
+      }
   }
   
   //getCoinApiName -> get coin full name from coinName to use in API request at getRate *

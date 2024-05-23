@@ -1,6 +1,7 @@
 import mysql from "mysql2"
 import { MongoClient } from 'mongodb'
 import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "../../types/database/db.response.types"
+import { CUSTOMER, CUSTOMER_ACTION } from "src/types/customer/customer.types"
 // import { CUSTOMER_ACTION } from "../../types/database/customer.types"
 // import { AUTH_CLIENT_DTO } from "../../types/auth/client.dto.type"
 
@@ -15,8 +16,9 @@ export abstract class Database {
   constructor(db: mysql.Connection | MongoClient) { this.db = db }
 
   public abstract insertData(): Promise<DB_INSERT_RESPONSE | Promise<() => DB_INSERT_RESPONSE>>;
-  public abstract selectData(): Promise<DB_SELECT_RESPONSE>;
-  public abstract updateData(): Promise<boolean>;
+  public abstract selectData(): Promise<DB_SELECT_RESPONSE >;
+  public abstract selectMultiplyData(): Promise<DB_SELECT_RESPONSE> | Promise<() => Promise<DB_SELECT_RESPONSE>[]>;
+  public abstract updateData(): Promise<DB_INSERT_RESPONSE>;
   public abstract deleteData(): Promise<boolean>;
 
   // abstract initConnection(): Promise<void>;

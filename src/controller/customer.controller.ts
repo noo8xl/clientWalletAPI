@@ -1,5 +1,6 @@
 import e, { NextFunction, Request, Response } from "express";
 import { CustomerServise } from "src/service/customer/customer.service";
+import { GET_ACTIONS_LIST } from "src/types/customer/customer.types";
 
 
 class CustomerComtroller {
@@ -8,11 +9,7 @@ class CustomerComtroller {
 
   public async changeFiatCurrencyDisplay(req: Request, res: Response): Promise<void>{
 
-    let dto = {
-      userId: req.params.userId,
-      fiatName: req.params.fiatName,
-    }
-
+    let dto = { userId: req.params.userId, fiatName: req.params.fiatName }
     await this.customerService.changeFiatDisplay(dto)
     
     res.status(202)
@@ -22,7 +19,8 @@ class CustomerComtroller {
 
 
   public async getActionsLog(req: Request, res: Response): Promise<void>{
-    let dto = {
+
+    let dto: GET_ACTIONS_LIST = {
       userId: req.params.userId,
       skip: Number(req.params.skip),
       limit: Number(req.params.limit),
@@ -43,9 +41,6 @@ class CustomerComtroller {
     res.json({message: "Access to API was revoked."})
     res.end()
   }
-
-
-
 
 }
 

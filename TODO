@@ -10,16 +10,22 @@
  -> refactor models +++ -----------------
  -> refactor schemas and add sql db table types +++ -------------------
 
+ -> customer colection and actions +++ --------------------
+ -> save actions +++ ----------------------
+
+
+ -> implement customer service +++ -----------------------
+
+------------------------------------------------------------------------------------
+
+ -> implement exchange service
+ 
  -> implement multithreading for the balance parser *
  -> implement fiat to crypto exchange *
 
- -> implement exchange service
- -> implement customer service 
+
 
  -> unit tests *
-
- -> customer colection and actions ???
- -> save actions 
 
 
  -> tsx interaction:
@@ -29,3 +35,9 @@
       -> if ok => get private key by cached data and sign transaction
             -> send notif to customer telegram via <getTransactionInfo> method 
       -> if not => remove cache data. 
+
+
+
+
+
+---> update mongodb response type ***

@@ -1,28 +1,26 @@
-import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "../../types/database/db.response.types";
+import { CUSTOMER_DB_CONSTRUCTOR, DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "../../types/database/db.response.types";
 import { MONGO_DB } from "../../config/configs"
 import { MongoClient } from "mongodb";
 import { CustomerDatabaseCore } from "./db.customer.core";
 import { TelegramNotificationApi } from "../../api/notificationCall.api";
 import { Helper } from "../../helpers/helper";
-import { CUSTOMER, CUSTOMER_ACTION } from "../../types/customer/customer.types";
+import { CUSTOMER, CUSTOMER_ACTION, GET_ACTIONS_LIST } from "../../types/customer/customer.types";
 import { CacheService } from "../cache/cache.service";
 import { CACHE_DTO } from "../../types/cache/cache.types";
-import { CustomerServise } from "../customer/customer.service";
 
 
 export class CustomerDatabaseService {
+  private db: MongoClient
   private readonly mongoUri: string = MONGO_DB.uri
   private readonly dbUser: string = MONGO_DB.userName
   private readonly dbPassword: string = MONGO_DB.userPassword
   private readonly dbName: string = MONGO_DB.databaseName
-  private db: MongoClient
   private readonly stamp: number = new Date().getTime()
 
   private dbInteract: CustomerDatabaseCore
   private readonly helper: Helper = new Helper()
   private readonly cacheService: CacheService = new CacheService()
   private readonly notificator: TelegramNotificationApi = new TelegramNotificationApi()
-  private readonly customerService: CustomerServise = new CustomerServise()
 
 
   constructor() { this.initConnection() }
@@ -30,9 +28,15 @@ export class CustomerDatabaseService {
   // findUserByFilter -> find user data by dto object filter ex => {userId: '123', userEmail: 'ex@mail.net'}
   public async findUserByFilter(filter: any): Promise<DB_SELECT_RESPONSE>{
     let c: DB_SELECT_RESPONSE;
-    
     await this.helper.validateObject(filter)
-    this.dbInteract = new CustomerDatabaseCore(this.db, this.dbName, filter)
+
+    let dbDto: CUSTOMER_DB_CONSTRUCTOR = {
+      databaseName: this.dbName,
+      collectionName: "Customer",
+      filter: filter
+    }
+
+    this.dbInteract = new CustomerDatabaseCore(this.db, dbDto)
     c = await this.dbInteract.selectData()
 
     await this.disconnectClient()
@@ -46,16 +50,22 @@ export class CustomerDatabaseService {
     await this.helper.validateObject(userDto)
     let expiredAt: number = this.stamp + 600_000
 
-    this.dbInteract = new CustomerDatabaseCore(this.db, this.dbName, userDto)
+    let dbDto: CUSTOMER_DB_CONSTRUCTOR = {
+      databaseName: this.dbName,
+      collectionName: "Customer",
+      filter: userDto
+    }
+
+    this.dbInteract = new CustomerDatabaseCore(this.db, dbDto)
     let result: DB_INSERT_RESPONSE = await this.dbInteract.insertData()
-    // console.log("inserted result is -> ", result);
-    
-    const actionLog: CUSTOMER_ACTION = {
-      userId: String(result),
+
+    let actionLog: CUSTOMER_ACTION = {
+      userId: result.toString(),
       date: this.stamp,
       status: "success",
       action: "Customer has been successfully registred."
     }
+
 
     const cache: CACHE_DTO = { 
       userId: result.toString(), 
@@ -64,36 +74,66 @@ export class CustomerDatabaseService {
     }
 
     await this.cacheService.setSessionData(cache)
-    await this.customerService.setActionsData(actionLog)
+    await this.saveUserLogsData(actionLog)
     await this.disconnectClient()
 	}
 
+  // updateCustomerProfile -> update fields in customer document 
   public async updateCustomerProfile(userDto: any): Promise<void> {
 
-    this.dbInteract = new CustomerDatabaseCore(this.db, this.dbName, userDto)
-    // let result: DB_INSERT_RESPONSE = await this.dbInteract.updateData()
+    let dbDto: CUSTOMER_DB_CONSTRUCTOR = {
+      databaseName: this.dbName,
+      collectionName: "Customer",
+      filter: userDto.filter,
+      updatedDoc: userDto.doc
+    }
 
-//
-//
-//
-//
-//
-//
-//
-//
-
-//
-    // status depends on db result 
-    // updated data isn't the same  -> success else -> failed
-
-    const actionLog: CUSTOMER_ACTION = {
+    let actionLog: CUSTOMER_ACTION = {
       userId: userDto.userId,
       date: this.stamp,
       status: "success",
-      action: "Customer has been successfully registred."
+      action: "Customer has been successfully updated."
+    }
+
+    this.dbInteract = new CustomerDatabaseCore(this.db, dbDto)
+    let result: DB_INSERT_RESPONSE = await this.dbInteract.updateData()
+    if (!result) {
+      actionLog.status = "failed"
+      actionLog.action = "Customer updating was failed."
     }
    
-    await this.customerService.setActionsData(actionLog)
+    await this.saveUserLogsData(actionLog)
+    await this.disconnectClient()
+  }
+
+  // getActionHistory -> get user action history by setted params
+  public async getActionHistory(userDto: any): Promise<DB_SELECT_RESPONSE> {
+    let r: DB_SELECT_RESPONSE;
+
+    let dbDto: CUSTOMER_DB_CONSTRUCTOR = {
+      databaseName: this.dbName,
+      collectionName: "Actions",
+      filter: userDto,
+      updatedDoc: userDto.doc
+    }
+
+    this.dbInteract = new CustomerDatabaseCore(this.db, dbDto)
+    r = await this.dbInteract.selectMultiplyData()
+
+    await this.disconnectClient()
+    return r
+  }
+
+  // saveUserLogsData -> save customer actions log to db
+  public async saveUserLogsData(actionLog: CUSTOMER_ACTION): Promise<void> {
+    let dbDto: CUSTOMER_DB_CONSTRUCTOR = {
+      databaseName: this.dbName,
+      collectionName: "Actions",
+      filter: actionLog
+    }
+
+    this.dbInteract = new CustomerDatabaseCore(this.db, dbDto)
+    await this.dbInteract.insertData()
     await this.disconnectClient()
   }
 

@@ -1,6 +1,6 @@
 
 type FIAT_NAME = "AUD" | "USD" | "EUR" |"RUB" |"AED"
-type ACTION_STATUS = "success" | "rejected" | "pemding"
+type ACTION_STATUS = "success" | "failed" | "pemding"
 
 export type CUSTOMER = {
   userId?: string
@@ -22,3 +22,8 @@ export type CUSTOMER_ACTION = {
   action: string
 }
 
+export type GET_ACTIONS_LIST = {
+  userId: string
+  skip: number
+  limit: number
+}
