@@ -12,7 +12,6 @@ const router = express.Router()
 router.put(
 	'/auth/signUp/',
 	authController.signUpNewClient)
-
 	
 
 // ################# customer area ####################

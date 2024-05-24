@@ -5,8 +5,6 @@ import { ApiError } from "../exceptions/apiError";
 export class Helper {
   private readonly errorHandler: ApiError = new ApiError()
 
-  // constructor(){}
-
   //getDomainNameFromOrigin -> get domain name
   async getOriginName(origin: string): Promise<string> {
     return origin.split('//')[1]

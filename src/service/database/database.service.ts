@@ -18,11 +18,8 @@ export abstract class Database {
   public abstract insertData(): Promise<DB_INSERT_RESPONSE | Promise<() => DB_INSERT_RESPONSE>>;
   public abstract selectData(): Promise<DB_SELECT_RESPONSE >;
   public abstract selectMultiplyData(): Promise<DB_SELECT_RESPONSE> | Promise<() => Promise<DB_SELECT_RESPONSE>[]>;
-  public abstract updateData(): Promise<DB_INSERT_RESPONSE>;
+  public abstract updateData(): Promise<DB_INSERT_RESPONSE | boolean>;
   public abstract deleteData(): Promise<boolean>;
-
-  // abstract initConnection(): Promise<void>;
-  // abstract disconnectClietn(): Promise<void>;
 
 }
 

@@ -4,7 +4,7 @@ import { RATE_DATA, WALLET } from "../../types/wallet/wallet.types"
 export abstract class Wallet {
   coinName: string
 
-  constructor(coinName: string){ this.coinName = coinName }
+  constructor(coinName: string) { this.coinName = coinName }
 
   public abstract createWallet(): Promise<string>;
   public abstract getWallet(): Promise<WALLET>;
@@ -13,10 +13,6 @@ export abstract class Wallet {
   public abstract getTransactionInfo(): Promise<any>;
 
   public abstract getRate(): Promise<RATE_DATA>;
-
-  // hasBalance : bool 
-  // used: bool
-  // balance: int
 
 }
 

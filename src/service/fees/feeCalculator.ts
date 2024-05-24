@@ -1,9 +1,10 @@
-import ApiError from "../../exceptions/apiError"
+import { ApiError } from "../../exceptions/apiError"
 import { coinList } from "../../config/configs"
 
 
 export default class FeeCalculator {
   coinName: string
+  private readonly errorHandler: ApiError = new ApiError()
 
   constructor(coin: string) {
     this.coinName = coin
@@ -27,7 +28,7 @@ export default class FeeCalculator {
       // case coinList[7]:
       //   return this.getTelegramNetworkBalance(address)
       default:
-        throw await ApiError.BadRequest()
+        throw await this.errorHandler.BadRequest()
     }
   }
 

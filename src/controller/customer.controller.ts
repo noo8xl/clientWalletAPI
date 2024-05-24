@@ -1,11 +1,10 @@
-import e, { NextFunction, Request, Response } from "express";
-import { CustomerServise } from "src/service/customer/customer.service";
-import { GET_ACTIONS_LIST } from "src/types/customer/customer.types";
+import { Request, Response } from "express";
+import { CustomerServise } from "../service/customer/customer.service";
+import { GET_ACTIONS_LIST } from "../types/customer/customer.types";
 
 
 class CustomerComtroller {
   private readonly customerService: CustomerServise = new CustomerServise()
-
 
   public async changeFiatCurrencyDisplay(req: Request, res: Response): Promise<void>{
 

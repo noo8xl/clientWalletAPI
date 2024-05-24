@@ -62,7 +62,13 @@ export class WalletDatabaseCore extends Database {
 
   }
 
-  async updateData(): Promise<boolean> {
+  public async selectMultiplyData(): Promise<DB_INSERT_RESPONSE[]>{
+    let c: DB_INSERT_RESPONSE[]
+    return c
+  }
+
+
+  async updateData(): Promise<DB_INSERT_RESPONSE | boolean> {
     return false
   }
   async deleteData(): Promise<boolean> {

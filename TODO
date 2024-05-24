@@ -19,7 +19,7 @@
 ------------------------------------------------------------------------------------
 
  -> implement exchange service
- 
+
  -> implement multithreading for the balance parser *
  -> implement fiat to crypto exchange *
 
@@ -40,4 +40,5 @@
 
 
 
----> update mongodb response type ***
+---> should update mongodb response type ***
+---> should update redis client type ****

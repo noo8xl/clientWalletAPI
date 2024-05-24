@@ -3,9 +3,6 @@ import { Response } from 'express'
 
 // ApiError -> handle an API errors 
 export class ApiError {
-  name: string
-  message: string
-  error: string
 
   private readonly res: Response
   private readonly notification: TelegramNotificationApi = new TelegramNotificationApi()
@@ -28,7 +25,7 @@ export class ApiError {
   public async BadRequest(action?: string): Promise<void> {
     await this.notification.sendErrorMessage(`Catch an error. ${action}.`)
     this.res.status(400)
-    this.res.json({message: "Bad request."})
+    this.res.json({message: `${!action ? "Bad request." : action}`})
     this.res.end()
   }
 

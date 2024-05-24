@@ -5,17 +5,16 @@ import { WALLET_REQUEST_DTO } from '../types/wallet/wallet.types';
 
 // CryptoController -> handle user request 
 class CryptoController {
+	private readonly cryptoService: CryptoService = new CryptoService()
 
-
-	async generateWalletAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
+	async generateWalletAddress(req: Request, res: Response): Promise<void> {
 
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
 			coinName: req.params.coinName.toLowerCase().replace('-', '/')
 		}
 
-		const service: CryptoService = new CryptoService(dto)
-		const address: string = await service.generateOneTimeAddressByCoinName()
+		const address: string = await this.cryptoService.generateOneTimeAddressByCoinName(dto)
 
 		res.status(201)
 		res.json({coinName: dto.coinName, address: address})
@@ -24,7 +23,7 @@ class CryptoController {
 	}
 
 
-	async getBalance(req: Request, res: Response, next: NextFunction): Promise<void> {
+	async getBalance(req: Request, res: Response): Promise<void> {
 
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
@@ -32,17 +31,12 @@ class CryptoController {
 			address: req.params.address
 		}
 
-		const service: CryptoService =  new CryptoService(dto)
-		try {
-			const balance: number = await service.getBalance()
+		const balance: number = await this.cryptoService.getBalance(dto)
 
-			res.status(200)
-			res.json({coinName: dto.coinName, balance: balance})
-			res.end()
+		res.status(200)
+		res.json({coinName: dto.coinName, balance: balance})
+		res.end()
 
-		} catch (e) {
-			next(e)
-		}
 	}
 	
 	async sendManualTransaction(req: Request, res: Response): Promise<void> {
@@ -51,7 +45,6 @@ class CryptoController {
 			coinName: req.params.coinName.toLowerCase().replace('-', '/'),
 			address: req.params.address
 		}
-		const service: CryptoService = new CryptoService(dto)
 
 		// -> should add telegram 2fa to verify transaction sending by owner
 
@@ -59,7 +52,7 @@ class CryptoController {
 		// -> if not - send msg as response 
 		// -> if yes -> sign tsx and send tsx info as response
 
-		const tsx: string = await service.sendManualTransaction()
+		const tsx: string = await this.cryptoService.sendManualTransaction(dto)
 
 		res.status(200)
 		res.json({transactionDetails: tsx})

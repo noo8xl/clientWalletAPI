@@ -1,16 +1,12 @@
 
-import { Request, Response, NextFunction } from "express"
-import { AUTH_CLIENT_DTO } from "../types/auth/client.dto.type"
+import { Request, Response } from "express"
 import { AuthService } from "../service/auth/auth.service"
 
 class AuthController {
-  private authService: AuthService
+  private readonly authService: AuthService = new AuthService()
 
   async signUpNewClient(req: Request, res: Response): Promise<void> {
-
-    const clientDto: AUTH_CLIENT_DTO = req.body
-    this.authService = new AuthService(clientDto)
-    await this.authService.signUpNewClient()
+    await this.authService.signUpNewClient(req.body)
 
     res.status(201)
     res.json({message: "client successfully created"})

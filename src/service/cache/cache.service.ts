@@ -1,12 +1,11 @@
-import { CUSTOMER } from "../../types/customer/customer.types";
 import { CACHE_DTO } from "../../types/cache/cache.types"
-// import { Helper } from "../../helpers/helper";
-import { createClient } from "redis";
+import { RedisClientType, RedisFunctions, RedisModules, RedisScripts, createClient } from "redis";
 import { ApiError } from "../../exceptions/apiError";
+// import { Helper } from "../../helpers/helper";
 
 
 export class CacheService {
-  private client: any // redis client <-
+  private rdb // -> should be typed
 
   // private readonly helper: Helper = new Helper()
   private readonly errorHandler: ApiError = new ApiError()
@@ -15,18 +14,16 @@ export class CacheService {
 
   // ############### -> setters area
 
-
   // setSessionData -> should be used ONLY for user session 
   public async setSessionData(dto: CACHE_DTO): Promise<void> {
-    await this.client.hSEt(dto.apiKey, dto)
-    await this.client.disconnect()
+    await this.rdb.hSet(dto.apiKey, dto)
+    await this.rdb.disconnect()
   }
-
 
   // setCachedData -> set date to cache store 
   public async setCachedData(dto: CACHE_DTO): Promise<void> {
-    await this.client.hSEt(dto.userId, dto)
-    await this.client.disconnect()
+    await this.rdb.hSet(dto.userId, dto)
+    await this.rdb.disconnect()
   }
 
   // ############### -> getters area
@@ -35,11 +32,11 @@ export class CacheService {
   // or with <address> as key to get tsx cache data
   public async getCachedData(key: string): Promise<CACHE_DTO> {
     let c: CACHE_DTO;
-    let temp: CACHE_DTO = await this.client.hGetAll(key)
+    let temp = await this.rdb.hGetAll(key)
     c = JSON.parse(JSON.stringify(temp, null, 2))
     if (!c) return null
 
-    await this.client.disconnect()
+    await this.rdb.disconnect()
     return c;
   }
 
@@ -47,24 +44,23 @@ export class CacheService {
 
   // clearCachedDataByKey -> delete cached data by key
   public async clearCachedDataByKey(key: string): Promise<void> {
-    await this.client.del(key)
-    await this.client.disconnect()
+    await this.rdb.del(key)
+    await this.rdb.disconnect()
   }
 
   // clearAllCachedData -> dpor all cached data * <should be used carefully>
   public async clearAllCachedData(): Promise<void> {
-    await this.client.flushAll()
-    await this.client.disconnect()
+    await this.rdb.flushAll()
+    await this.rdb.disconnect()
   }
-
-
 
   // connectClient -> connecting to the redis client 
   private async connectClient(): Promise<void> {
-    this.client = await createClient().
-      on('connect', () => { console.log("redis is connected!"); }).
-      on('error', async() => { throw await this.errorHandler.ServerError("Cache DB connection") }).
-      connect();
+    this.rdb = await createClient()
+      .on('error', async () => { 
+        throw await this.errorHandler.ServerError("Cache DB connection") 
+      })
+      .connect();
 
     // const client = createClient({
     //   username: 'default', // use your Redis user. More info https://redis.io/docs/management/security/acl/
