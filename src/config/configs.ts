@@ -17,10 +17,10 @@ export const apiUrl = process.env.API_URL;
 // ============================================================================================================= //
 
 export const MONGO_DB = {
-  uri: process.env.MONGO_DB_LINK,
-  userName: process.env.MONGO_DB_USER,
-  userPassword: process.env.MONGO_DB_PASSWORD,
-  databaseName: process.env.MONGO_DB_NAME,
+  link: process.env.MONGO_DB_LINK,
+  // userName: process.env.MONGO_DB_USER,
+  // userPassword: process.env.MONGO_DB_PASSWORD,
+  // databaseName: process.env.MONGO_DB_NAME,
 }
 
 export const REDIS_STORE = {

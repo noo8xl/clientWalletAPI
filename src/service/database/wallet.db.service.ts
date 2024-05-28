@@ -1,10 +1,11 @@
 
-import mysql from 'mysql2'
+
+import mysql, { ResultSetHeader, QueryError, RowDataPacket } from 'mysql2'
 import { TelegramNotificationApi } from '../../api/notificationCall.api';
 import { MYSQL_DB, coinList } from '../../config/configs';
 import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from '../../types/database/db.response.types';
-import { WalletDatabaseCore } from './db.wallet.core';
 import { WALLET } from '../../types/wallet/wallet.types';
+import ErrorInterceptor from 'src/exceptions/apiError';
 
 
 export class WalletDatabaseService {
@@ -14,10 +15,12 @@ export class WalletDatabaseService {
 	private readonly dbPassword = MYSQL_DB.userPassword
 	private readonly dbName = MYSQL_DB.databaseName
 
-	private dbInteract: WalletDatabaseCore
-	private readonly notificator: TelegramNotificationApi = new TelegramNotificationApi()
+	private notificator: TelegramNotificationApi
 
-	constructor() { this.initConnection() }
+	constructor() { 
+		this.notificator = new TelegramNotificationApi()
+		this.initConnection() 
+	}
 
 
 	// saveUserWallet -> save wallet to db for current user
@@ -40,13 +43,13 @@ export class WalletDatabaseService {
 			walletDto.userId,
 		]
 
+		// could be refactored  ? * <--------------------------------------------------------------------------------------------------
 		if ( walletDto.seedPhrase !== "" && walletDto.mnemonic !== "") {
 			listOfValues[4] = walletDto.seedPhrase
 			listOfValues[5] = walletDto.mnemonic
 		}
 
-		this.dbInteract = new WalletDatabaseCore(this.db, sql, listOfValues)
-		result = await this.dbInteract.insertData()
+		result = await this.insertData(sql, listOfValues)
 		
 		this.closeConnection()
 		return result
@@ -92,8 +95,7 @@ export class WalletDatabaseService {
 			AND coinName = ?
 		`;
 
-		this.dbInteract = new WalletDatabaseCore(this.db, sql, [address, coinName])
-		result = await this.dbInteract.selectData()
+		result = await this.selectData(sql,[ address, coinName])
 
 		this.closeConnection()
 		return result
@@ -148,35 +150,53 @@ export class WalletDatabaseService {
 //     })
 //   }
 
-	// async getDepositWalletList(from: number, to: number): Promise<RowDataPacket[] | QueryError>  {
-	
-	// 	const sql: string = `
-	// 	SELECT *
-	// 	FROM wallet_list
-	// 	WHERE expired_date 
-	// 	BETWEEN ?
-	// 	AND ?
-	// 	`;
 
-	// 	await this.initConnection()
+  // ============================================================================================================= //
+  // ############################################# private usage area ############################################ //
+  // ============================================================================================================= //
 
-	// 	try {
-	// 		return new Promise((resolve, reject) => {
-	// 			this.mysql.query<RowDataPacket[]>(
-	// 				sql,
-	// 				[from, to],
-	// 				(err: any, result, fields?) => {
-	// 					if(err) reject(new Error(err))
-	// 					console.log('result => ',result);
-	// 					// console.log('field packet => ',fields);
-	// 					resolve(result)
-	// 				}
-	// 			)
-	// 		})
-	// 	} catch (e) {
-	// 		throw await ApiError.ServerError("test action str here <-")
-	// 	}
-	// }
+
+  private async insertData(sqlString: string, values: any[]): Promise<DB_INSERT_RESPONSE> {
+    
+    try {
+			return new Promise((resolve, reject) => {
+        this.db.query<ResultSetHeader>(
+          sqlString, values,
+          (err: any, result, fields?) => {
+            if(err) reject(new Error(err))
+            console.log('result => ',result);
+            // console.log('field packet => ',fields);
+            resolve(result)
+          }
+        )
+				})
+		} catch (e) {
+			throw await ErrorInterceptor.ServerError("Wallet DB insertion")
+		}
+  }
+
+	private async selectData(sqlString: string, values: any[]): Promise<RowDataPacket[] | QueryError> {
+
+    try {
+      return new Promise((resolve, reject) => {
+        this.db.query<RowDataPacket[]>(
+          sqlString,
+          values,
+          (err: any, result, fields?) => {
+            if(err) reject(new Error(err))
+            console.log('result => ',result);
+            // console.log('field packet => ',fields);
+            resolve(result)
+          }
+        )
+      })
+      
+    } catch (e) {
+      throw await ErrorInterceptor.ServerError("Wallet DB selection")
+    }
+
+  }
+
 
   // initConnection -> init mysql connection 
 	private async initConnection(): Promise<void>  {

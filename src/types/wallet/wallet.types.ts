@@ -59,6 +59,7 @@ type SOLANA_WALLET = {
   balance: number
 }
 
+// type COIN_NAME_LIST = "btc" | "etc" | "trx" | "ton" | "sol"
 
 export type WALLET = BITCOIN_WALLET | ETHEREUM_WALLET | THEOPENNETWORK_WALLET | TRON_WALLET | SOLANA_WALLET ;
 export type WALLET_TYPE = BitcoinService  | TronService | TheOpenNetworkService | EthereumService | SolanaService ;
@@ -70,6 +71,6 @@ export type RATE_DATA = {
 }
 export type WALLET_REQUEST_DTO = {
   userId: string
-  coinName: string  // "btc" | "etc" | "trx" | "ton" | "sol"
+  coinName: string
   address?: string
 }

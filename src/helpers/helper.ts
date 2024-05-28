@@ -1,9 +1,8 @@
 import { availableCoins } from "../config/configs";
-import { ApiError } from "../exceptions/apiError";
+// import ErrorInterceptor  from "../exceptions/apiError";
 
 
 export class Helper {
-  private readonly errorHandler: ApiError = new ApiError()
 
   //getDomainNameFromOrigin -> get domain name
   async getOriginName(origin: string): Promise<string> {
@@ -14,7 +13,7 @@ export class Helper {
   // validateObject -> validate if object keu has an undefined value 
   async validateObject(obj: any): Promise<void> {
       for (let i in obj) {
-        if (obj[i] === undefined) throw await this.errorHandler.BadRequest("Found an undefined value")
+        if (obj[i] === undefined) return // throw await this.errorHandler.BadRequest("Found an undefined value")
         if (typeof obj[i] === "object") await this.validateObject(obj[i])
       }
   }
@@ -28,8 +27,9 @@ export class Helper {
       } else {
         return availableCoins[i].coinApiName
       }
-    }
-    throw await this.errorHandler.NotFoundError()
+    }   
+
+    // throw await this.errorHandler.NotFoundError()
   }
 
 

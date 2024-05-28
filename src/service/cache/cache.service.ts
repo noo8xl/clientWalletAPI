@@ -1,16 +1,17 @@
 import { CACHE_DTO } from "../../types/cache/cache.types"
-import { RedisClientType, RedisFunctions, RedisModules, RedisScripts, createClient } from "redis";
-import { ApiError } from "../../exceptions/apiError";
+import { createClient } from "redis";
+// import { ErrorInterceptor } from "../../exceptions/apiError";
 // import { Helper } from "../../helpers/helper";
 
 
 export class CacheService {
   private rdb // -> should be typed
 
-  // private readonly helper: Helper = new Helper()
-  private readonly errorHandler: ApiError = new ApiError()
+  constructor() {
 
-  constructor() { this.connectClient() }
+    // this.initClient()
+    // this.connectClient()
+   }
 
   // ############### -> setters area
 
@@ -56,11 +57,17 @@ export class CacheService {
 
   // connectClient -> connecting to the redis client 
   private async connectClient(): Promise<void> {
-    this.rdb = await createClient()
+    await this.rdb.connect();
+  }
+
+  // initClient -> init redis instance
+  private async initClient(): Promise<void> {
+    this.rdb = createClient()
       .on('error', async () => { 
-        throw await this.errorHandler.ServerError("Cache DB connection") 
+        console.log("rdb error ");
+        
+        // return await this.errorHandler.ServerError("Cache DB connection") 
       })
-      .connect();
 
     // const client = createClient({
     //   username: 'default', // use your Redis user. More info https://redis.io/docs/management/security/acl/

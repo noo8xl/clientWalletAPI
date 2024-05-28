@@ -12,13 +12,14 @@ export class TronService extends Wallet {
   private readonly tronApiKey = TRON_API_KEY
   private userId: string
   private address: string
-  private readonly helper: Helper = new Helper()
+  private helper: Helper
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
     this.userId = dto.userId
     this.coinName = dto.coinName
     this.address = dto.address
+    this.helper = new Helper()
   }
 
   async createWallet(): Promise<string> {

@@ -10,16 +10,17 @@ export class TheOpenNetworkService extends Wallet {
   coinName: string
   private userId: string
   private address: string
-  private readonly network: string = "testnet"
-  // private readonly network: string = "mainnet"
-  private readonly helper: Helper = new Helper()
-  private readonly client: TonClient = new TonClient({endpoint: this.network})
+  private helper: Helper
+  private client: TonClient
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
     this.userId = dto.userId
     this.coinName = dto.coinName
     this.address = dto.address
+    this.helper = new Helper()
+    this.client = new TonClient({endpoint: "testnet"})
+    // this.client = new TonClient({endpoint: "mainnet"})
   }
 
 

@@ -14,13 +14,14 @@ export class SolanaService extends Wallet {
   private readonly API_KEY = SOL_KEY
   private userId: string
   private address: string
-  private readonly helper: Helper = new Helper()
+  private helper: Helper
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
     this.userId = dto.userId
     this.coinName = dto.coinName
     this.address = dto.address
+    this.helper = new Helper()
   }
 
 

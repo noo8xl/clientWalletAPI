@@ -1,48 +1,82 @@
 import { TelegramNotificationApi } from '../api/notificationCall.api'
-import { Response } from 'express'
 
-// ApiError -> handle an API errors 
-export class ApiError {
 
-  private readonly res: Response
-  private readonly notification: TelegramNotificationApi = new TelegramNotificationApi()
+// // // errors.js
+// class TestInterceptor extends Error { // parent error
+//   name: string
+//   type: string
+//   statusCode: number
 
-  public async UnauthorizedError(): Promise<void> {
-    this.res.status(401)
-    this.res.json({message: "Unauthorized error."})
-    this.res.end()
+//   constructor(message: string, statusCode: number) {
+//       super();
+//       this.name = this.constructor.name // good practice
+
+//       if (this instanceof LongTitleError) // checking if title or body
+//           this.type = 'title'
+//       else if (this instanceof LongBodyError)
+//           this.type = 'body'
+ 
+//     this.message = message// detailed error message
+//     this.statusCode = statusCode // error code for responding to client
+//   }
+// }
+
+// // extending to child error classes
+// class LongTitleError extends TestInterceptor { }
+// class LongBodyError extends TestInterceptor { }
+
+// module.exports = {
+//     TestInterceptor,
+//     LongTitleError,
+//     LongBodyError
+// }
+
+
+// ErrorInterceptor -> handle an API errors
+export default class ErrorInterceptor extends Error {
+
+  message: string
+  status: number  
+  errors: string[]
+
+  constructor(status: number, message: string, errors: string[] = []){
+    super(message)
+    this.message = message
+    this.status = status
+    this.errors = errors
+  }
+
+  static async UnauthorizedError(): Promise<ErrorInterceptor> {
+    return new ErrorInterceptor(401, "Unauthorized error.")
   }
 
   //res?: express.Response,
-  public async PermissionDenied(action: string): Promise<void> {
-    await this.notification.sendErrorMessage(`Catch permission denied error at ${action}.`)
-    this.res.status(403)
-    this.res.json({message: "Permission denied."})
-    this.res.end()
-    // throw new Error("Permission denied.")
+  static async PermissionDenied(action: string): Promise<ErrorInterceptor> {
+    let n = new TelegramNotificationApi()
+    await n.sendErrorMessage(`Catch permission denied error at ${action}.`)
+    return new ErrorInterceptor(403, "Permission denied.")
   }
 
-  public async BadRequest(action?: string): Promise<void> {
-    await this.notification.sendErrorMessage(`Catch an error. ${action}.`)
-    this.res.status(400)
-    this.res.json({message: `${!action ? "Bad request." : action}`})
-    this.res.end()
+  static async BadRequest(action?: string): Promise<ErrorInterceptor> {
+    let n = new TelegramNotificationApi()
+    await n.sendErrorMessage(`Catch an error. ${action}.`)
+
+    return new ErrorInterceptor(400, `${!action ? "Bad request." : action}`)
   }
 
-  public async ServerError(action: string): Promise<void> {
-    await this.notification.sendErrorMessage(`${action} was failed.`)
-    this.res.status(500)
-    this.res.json({message: "Internal server error."})
-    this.res.end()
+  static async ServerError(action: string): Promise<ErrorInterceptor> {
+    let n = new TelegramNotificationApi()
+    await n.sendErrorMessage(`${action} was failed.`)
+    return new ErrorInterceptor(500, "Internal server error.")
   }
 
-  public async NotFoundError(): Promise<void> {
-    this.res.status(404)
-    this.res.json({message: "Not found."})
-    this.res.end()
+  static async NotFoundError(): Promise<ErrorInterceptor> {
+    return new ErrorInterceptor(404, "Not found.")
   }
 
   // ############################################################################################## //
   
-  private sendErrorMessage(): any {}
+  // private async sendErrorMessage(action: string): Promise<void> {
+  //   await this.notification.sendErrorMessage(`Catch permission denied error at ${action}.`)
+  // }
 }

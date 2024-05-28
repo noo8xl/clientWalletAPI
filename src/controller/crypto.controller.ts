@@ -1,11 +1,13 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { CryptoService } from "../service/crypto/crypto.service";
 import { WALLET_REQUEST_DTO } from '../types/wallet/wallet.types';
 
 
 // CryptoController -> handle user request 
 class CryptoController {
-	private readonly cryptoService: CryptoService = new CryptoService()
+	private cryptoService: CryptoService 
+
+	constructor(){ this.cryptoService = new CryptoService() }
 
 	async generateWalletAddress(req: Request, res: Response): Promise<void> {
 

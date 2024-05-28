@@ -19,59 +19,59 @@ export class TelegramNotificationApi {
   constructor() {}
 
   public async sendInfoMessage(chatId: number, userRequest: string): Promise<boolean> {
-
-		const sendMessage: boolean = await axios(
-			`${this.apiPath}/sendActionMessage/`, {
-			method: 'POST',
-			responseType: 'stream',
-			data: {
-					chatId,
-					userRequest
-			},
-			headers: {
-					'X-Access-Token': this.accessToken,
-					'AccessKey': this.apiKey
-			}
-		})
-			.then((res: AxiosResponse) => {
-				console.log(res.status)
-				console.log(res.statusText)
-				// console.log('res body => ', res);
-				return true
-			})
-			.catch((e: AxiosError) => {
-				console.log('error => ', e.message);
-				return false
-			})
-		return sendMessage
+		return true
+		// return await axios(
+		// 	`${this.apiPath}/sendActionMessage/`, {
+		// 	method: 'POST',
+		// 	responseType: 'stream',
+		// 	data: {
+		// 			chatId,
+		// 			userRequest
+		// 	},
+		// 	headers: {
+		// 			'X-Access-Token': this.accessToken,
+		// 			'AccessKey': this.apiKey
+		// 	}
+		// })
+		// 	.then((res: AxiosResponse) => {
+		// 		console.log(res.status)
+		// 		console.log(res.statusText)
+		// 		// console.log('res body => ', res);
+		// 		return true
+		// 	})
+		// 	.catch((e: AxiosError) => {
+		// 		console.log('error => ', e.message);
+		// 		return false
+		// 	})
   }
 
 	public async sendErrorMessage(msg: string): Promise<boolean> {
-
-		const sendMessage: boolean = await axios(
-			`${this.apiPath}/sendActionMessage/`, {
-			method: 'POST',
-			responseType: 'stream',
-			data: {
-					chatId: this.devId,
-					userRequest: msg
-			},
-			headers: {
-					'X-Access-Token': this.accessToken,
-					'AccessKey': this.apiKey
-			}
-		})
-			.then((res: AxiosResponse) => {
-				console.log(res.status)
-				console.log(res.statusText)
-				// console.log('res body => ', res);
-				return true
-			})
-			.catch((e: AxiosError) => {
-				console.log('error => ', e.message);
-				return false
-			})
-		return sendMessage
+		console.log('tg interact');
+		
+		return true
+		// return await axios(
+		// 	`${this.apiPath}/sendActionMessage/`, {
+		// 	method: 'POST',
+		// 	responseType: 'stream',
+		// 	data: {
+		// 			chatId: this.devId,
+		// 			userRequest: msg
+		// 	},
+		// 	headers: {
+		// 			'X-Access-Token': this.accessToken,
+		// 			'AccessKey': this.apiKey
+		// 	}
+		// })
+		// 	.then((res: AxiosResponse) => {
+		// 		console.log(res.status)
+		// 		console.log(res.statusText)
+		// 		// console.log('res body => ', res);
+		// 		return true
+		// 	})
+		// 	.catch((e: AxiosError) => {
+		// 		console.log('error => ', e.message);
+		// 		return false
+		// 	})
 
 	}
 

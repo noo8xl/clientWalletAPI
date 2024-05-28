@@ -1,6 +1,6 @@
 
 import { coinList } from "../../config/configs";
-import { ApiError } from "../../exceptions/apiError";
+import ErrorInterceptor  from "../../exceptions/apiError";
 import { BitcoinService } from '../wallet/bitcoin.service';
 import { EthereumService } from "../wallet/ethereum.service";
 import { TronService } from "../wallet/tron.service";
@@ -12,7 +12,8 @@ import { WALLET_REQUEST_DTO, WALLET_TYPE } from '../../types/wallet/wallet.types
 // CryptoService -> CRUD interaction with different blockchains 
 export class CryptoService {
   private wt: WALLET_TYPE;
-  private readonly errorHandler: ApiError = new ApiError()
+
+  constructor() {}
 
   // generateOneTimeAddressByCoinName -> generate address in chosen blockchain
   public async generateOneTimeAddressByCoinName(payload: WALLET_REQUEST_DTO): Promise<string> {
@@ -56,7 +57,7 @@ export class CryptoService {
         this.wt = new SolanaService(payload)
         break;
       default:
-        throw await this.errorHandler.BadRequest(`Can't send transaction in unknown ${payload.coinName} network or unavailable coin.`)
+        throw await ErrorInterceptor.BadRequest(`Can't send transaction in unknown ${payload.coinName} network or unavailable coin.`)
     }
   }
 

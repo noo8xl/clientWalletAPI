@@ -4,7 +4,9 @@ import { GET_ACTIONS_LIST } from "../types/customer/customer.types";
 
 
 class CustomerComtroller {
-  private readonly customerService: CustomerServise = new CustomerServise()
+  private customerService: CustomerServise
+
+  constructor() { this.customerService = new CustomerServise() }
 
   public async changeFiatCurrencyDisplay(req: Request, res: Response): Promise<void>{
 

@@ -12,13 +12,14 @@ export class EthereumService extends Wallet{
   private readonly API_KEY: string = ETH_KEY
   private userId: string
   private address: string
-  private readonly helper: Helper = new Helper()
+  private helper: Helper 
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
     this.userId = dto.userId
     this.coinName = dto.coinName
     this.address = dto.address
+    this.helper = new Helper()
   }
 
 

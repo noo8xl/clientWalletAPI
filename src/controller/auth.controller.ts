@@ -1,16 +1,14 @@
 
+
 import { Request, Response } from "express"
-import { AuthService } from "../service/auth/auth.service"
+import authService from "../service/auth/auth.service"
+// import ErrorInterceptor  from "../exceptions/apiError";
 
 class AuthController {
-  private readonly authService: AuthService = new AuthService()
 
   async signUpNewClient(req: Request, res: Response): Promise<void> {
-    await this.authService.signUpNewClient(req.body)
-
-    res.status(201)
-    res.json({message: "client successfully created"})
-    res.end()
+    await authService.signUpNewClient(req.body)
+    res.status(201).json({message: "client successfully created"}).end() 
   }
 
 }

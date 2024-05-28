@@ -1,10 +1,9 @@
 import { NextFunction, Response, Request } from 'express';
-import { AuthService } from '../service/auth/auth.service';
+import AuthService from '../service/auth/auth.service';
 
-export default async function validateAccessKey(req: Request, res: Response, next: NextFunction): Promise<void> {
-  // console.log('request headers => ', req.headers);
+export async function validateAccessKey(req: Request, res: Response, next: NextFunction): Promise<void> {
+  
   try {
-    const authService: AuthService = new AuthService()
     const key: string = req.headers.accesskey.toString()
     if (!key) {
       res.status(403)
@@ -13,8 +12,7 @@ export default async function validateAccessKey(req: Request, res: Response, nex
       next()
     }
 
-    await authService.signInClient({apiKey: key})
-    // console.log('access granted');
+    await AuthService.signInClient({apiKey: key})
     next()
   } catch (e: unknown) {
     next(e)

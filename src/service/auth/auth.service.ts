@@ -1,5 +1,5 @@
 
-import { ApiError } from "../../exceptions/apiError"
+import ErrorInterceptor  from "../../exceptions/apiError"
 import { CacheService } from "../cache/cache.service"
 import { CustomerDatabaseService } from "../database/customer.db.service"
 import { Helper } from "../../helpers/helper"
@@ -10,20 +10,28 @@ import { AUTH_CLIENT_DTO } from "../../types/auth/client.dto.type"
 import { CUSTOMER } from "../../types/customer/customer.types"
 
 // AuthService -> handle new customer registration and validate api key with middleware at each request
-export class AuthService {
+class AuthService {
   private readonly stamp: number = new Date().getTime()
-  private readonly helper: Helper = new Helper()
-  private readonly errorHandler: ApiError = new ApiError()
-  private readonly cacheService: CacheService = new CacheService()
-  private readonly customerDb: CustomerDatabaseService =  new CustomerDatabaseService()
+  private helper: Helper 
+  private cacheService: CacheService
+  private customerDb: CustomerDatabaseService
+
+  constructor(){
+    this.helper = new Helper()
+    this.cacheService = new CacheService()
+    this.customerDb = new CustomerDatabaseService()
+  }
 
   public async signUpNewClient(clientDto: AUTH_CLIENT_DTO): Promise<void> {
-    const customer: DB_SELECT_RESPONSE = await this.customerDb.findUserByFilter({userEmail: clientDto.userEmail})
-    if (customer) throw await this.errorHandler.BadRequest("Sign up")
+    const customer: DB_SELECT_RESPONSE = await this.customerDb.findUserByFilter({ userEmail: clientDto.userEmail })
+    // if (customer) { 
+    //   console.log("user already exists")
+    //   return 
+    // }
+    if (customer) throw await ErrorInterceptor.BadRequest("User already exists.")
 
     // generate an API key for user 
     const API_KEY: string = await this.helper.generatePassword(64)
-
     const userDto: CUSTOMER = {
       // userId: 
       userEmail: clientDto.userEmail,
@@ -36,16 +44,19 @@ export class AuthService {
       createdAt: this.stamp,
       updatedAt: this.stamp
     }
-
+    
     await this.customerDb.saveNewClient(userDto)
   }
 
   // signInClient ->  validate user session use cache and api key 
-  public async signInClient(clientDto: AUTH_CLIENT_DTO): Promise<void> {
+  public async signInClient(clientDto: AUTH_CLIENT_DTO): Promise<void> { 
     let c: CACHE_DTO = await this.cacheService.getCachedData(clientDto.apiKey)
     if(!c){
-      const candidate: DB_SELECT_RESPONSE = await this.customerDb.findUserByFilter({ apiKey: clientDto.apiKey })
-      if (!candidate) throw await this.errorHandler.PermissionDenied("Key to the API checker")
+      const candidate: CUSTOMER = await this.customerDb.findUserByFilter(clientDto)
+      if (!candidate) throw await ErrorInterceptor.PermissionDenied("Key to the API checker")
     } 
   }
 }
+
+export default new AuthService()
+
