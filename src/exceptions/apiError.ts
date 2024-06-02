@@ -1,4 +1,4 @@
-import { TelegramNotificationApi } from '../api/notificationCall.api'
+import { TelegramNotificationApi } from '../api/notification.api'
 
 // ErrorInterceptor -> handle an API errors
 export default class ErrorInterceptor extends Error {

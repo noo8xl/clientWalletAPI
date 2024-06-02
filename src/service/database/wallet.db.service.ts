@@ -1,7 +1,7 @@
 
 
 import mysql, { ResultSetHeader, QueryError, RowDataPacket } from 'mysql2'
-import { TelegramNotificationApi } from '../../api/notificationCall.api';
+import { TelegramNotificationApi } from '../../api/notification.api';
 import { MYSQL_DB } from '../../config/configs';
 import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from '../../types/database/db.response.types';
 import { WALLET } from '../../types/wallet/wallet.types';

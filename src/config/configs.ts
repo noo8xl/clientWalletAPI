@@ -47,10 +47,10 @@ export const MYSQL_DB = {
 // ########################################### notification keys area ########################################## //
 // ============================================================================================================= //
 
-export const NOTIFICATION_API_KEY: string | undefined = process.env.NOTIFICATION_API_KEY;
-export const NOTIFICATION_ACCESS_TOKEN: string | undefined = process.env.X_ACCESS_TOKEN;
-export const NOTIFICATION_API_PATH: string | undefined = process.env.NOTIFICATION_API_PATH;
+export const ERROR_BOT_TOKEN: string | undefined = process.env.ERROR_BOT_TOKEN
+export const NOTIFICATION_BOT_TOKEN: string | undefined = process.env.NOTIFICATION_BOT_TOKEN;
 export const ERR_CHAT_ID: string | undefined = process.env.ERROR_TELEGRAM_CHAT_ID;
+
 
 // ============================================================================================================= //
 // ########################################### crypto api keys area ############################################ //

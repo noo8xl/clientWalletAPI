@@ -1,6 +1,6 @@
 import { MongoClient } from "mongodb";
 import { MONGO_DB } from "../../config/configs"
-import { TelegramNotificationApi } from "../../api/notificationCall.api";
+import { TelegramNotificationApi } from "../../api/notification.api";
 import { Helper } from "../../helpers/helper";
 import { CUSTOMER, CUSTOMER_ACTION, GET_ACTIONS_LIST } from "../../types/customer/customer.types";
 import { CacheService } from "../cache/cache.service";
