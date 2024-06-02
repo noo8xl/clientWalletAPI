@@ -1,46 +1,47 @@
-import { Request, Response } from "express";
-import { CustomerServise } from "../service/customer/customer.service";
-import { GET_ACTIONS_LIST } from "../types/customer/customer.types";
-
+import { NextFunction, Request, Response } from "express";
+import customerService from "../service/customer/customer.service";
+import { CUSTOMER_ACTION, GET_ACTIONS_LIST } from "../types/customer/customer.types";
+import ErrorInterceptor  from "../exceptions/apiError";
 
 class CustomerComtroller {
-  private customerService: CustomerServise
 
-  constructor() { this.customerService = new CustomerServise() }
-
-  public async changeFiatCurrencyDisplay(req: Request, res: Response): Promise<void>{
-
+  public async changeFiatCurrencyDisplay(req: Request, res: Response, next: NextFunction): Promise<void>{
     let dto = { userId: req.params.userId, fiatName: req.params.fiatName }
-    await this.customerService.changeFiatDisplay(dto)
-    
-    res.status(202)
-    res.json({message: "Access to API was revoked."})
-    res.end()
+    try {
+      const result: boolean = await customerService.changeFiatDisplay(dto)
+      if (!result) throw await ErrorInterceptor.BadRequest()
+      res.status(202).json({message: "Fiat name was changed."}).end()
+    } catch (e) {
+      next(e)
+    }
   }
 
-
-  public async getActionsLog(req: Request, res: Response): Promise<void>{
+  public async getActionsLog(req: Request, res: Response, next: NextFunction): Promise<void>{
 
     let dto: GET_ACTIONS_LIST = {
-      userId: req.params.userId,
+    userId: req.params.userId,
       skip: Number(req.params.skip),
       limit: Number(req.params.limit),
     }
 
-    let result = await this.customerService.getActionsData(dto)
-    res.status(200)
-    res.json(result)
-    res.end()
-
+    try {
+      const result: CUSTOMER_ACTION[] | boolean = await customerService.getActionsData(dto)
+      if (!result) throw await ErrorInterceptor.ServerError("get Action list")
+      res.status(200).json(result).end()
+    } catch (e) {
+      next(e)
+    }
   }
 
-  public async revokeAnAccess(req: Request, res: Response): Promise<void>{
-    const key: string = req.params.userId
-    await this.customerService.revokeApiAccess(key)
-    
-    res.status(202)
-    res.json({message: "Access to API was revoked."})
-    res.end()
+  public async revokeAnAccess(req: Request, res: Response, next: NextFunction): Promise<void>{
+
+    try {
+      const result: boolean = await customerService.revokeApiAccess(req.params.userId)
+      if (!result) throw await ErrorInterceptor.ServerError("revoke api access")
+      res.status(202).json({message: "Access to API was revoked."}).end()
+      } catch (e) {
+      next(e)
+    }
   }
 
 }

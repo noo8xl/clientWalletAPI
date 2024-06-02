@@ -1,31 +1,32 @@
-import { Request, Response } from 'express';
-import { CryptoService } from "../service/crypto/crypto.service";
+import { NextFunction, Request, Response } from 'express';
+import cryptoService from "../service/crypto/crypto.service";
 import { WALLET_REQUEST_DTO } from '../types/wallet/wallet.types';
+import ErrorInterceptor  from "../exceptions/apiError";
 
 
 // CryptoController -> handle user request 
 class CryptoController {
-	private cryptoService: CryptoService 
 
-	constructor(){ this.cryptoService = new CryptoService() }
-
-	async generateWalletAddress(req: Request, res: Response): Promise<void> {
-
+	async generateWalletAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
+		console.log("controller");
+		
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
 			coinName: req.params.coinName.toLowerCase().replace('-', '/')
 		}
+		console.log("dto -> ", dto);
 
-		const address: string = await this.cryptoService.generateOneTimeAddressByCoinName(dto)
-
-		res.status(201)
-		res.json({coinName: dto.coinName, address: address})
-		res.end()
-
+		try {
+		const result: string | boolean = await cryptoService.generateOneTimeAddressByCoinName(dto)
+    if (!result) throw await ErrorInterceptor.BadRequest(`Can't send transaction in unknown ${dto.coinName} network or unavailable coin.`) 
+    res.status(201).json({coinName: dto.coinName, address: result}).end()
+		} catch (e) {
+			next(e)
+		}
 	}
 
 
-	async getBalance(req: Request, res: Response): Promise<void> {
+	async getBalance(req: Request, res: Response, next: NextFunction): Promise<void> {
 
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
@@ -33,15 +34,16 @@ class CryptoController {
 			address: req.params.address
 		}
 
-		const balance: number = await this.cryptoService.getBalance(dto)
-
-		res.status(200)
-		res.json({coinName: dto.coinName, balance: balance})
-		res.end()
-
+		try {
+			const result: number = await cryptoService.getBalance(dto)
+			if (result < 0) throw await ErrorInterceptor.ServerError("get balance")
+			res.status(200).json({coinName: dto.coinName, balance: result}).end()
+		} catch (e) {
+			next(e)
+		}
 	}
 	
-	async sendManualTransaction(req: Request, res: Response): Promise<void> {
+	async sendManualTransaction(req: Request, res: Response, next: NextFunction): Promise<void> {
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
 			coinName: req.params.coinName.toLowerCase().replace('-', '/'),
@@ -54,11 +56,14 @@ class CryptoController {
 		// -> if not - send msg as response 
 		// -> if yes -> sign tsx and send tsx info as response
 
-		const tsx: string = await this.cryptoService.sendManualTransaction(dto)
 
-		res.status(200)
-		res.json({transactionDetails: tsx})
-		res.end()
+		try {
+			const result: boolean | string = await cryptoService.sendManualTransaction(dto)
+			if (!result) throw await ErrorInterceptor.BadRequest(`Can't send transaction in unknown ${dto.coinName} network or unavailable coin.`) 
+			res.status(200).json({coinName: dto.coinName, transactionDetails: result}).end()
+		} catch (e) {
+			next(e)
+		}
 	}
 	
 
@@ -66,19 +71,6 @@ class CryptoController {
   // ================================== private methods for internal usage only ================================ //
   // ============================================================================================================= //
 
-	
-	// -------------------------------------------------------------------------------- //
-	// ----------------------------- test data ---------------------------------------- //
-	// -------------------------------------------------------------------------------- //
-
-	// async getTest(req: Request, res: Response, next: NextFunction): Promise<any> {
-	// 	const message: string = 'hello api'
-	// 	try {
-	// 		return res.status(200).json()
-	// 	} catch (e) {
-	// 		next(e)
-	// 	}
-	// }
 
 
 }

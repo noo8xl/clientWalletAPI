@@ -5,6 +5,8 @@ import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet
 import { ETH_KEY } from '../../config/configs';
 import axios from 'axios';
 import { Helper } from '../../helpers/helper';
+import { WalletDatabaseService } from "../database/wallet.db.service"
+import ErrorInterceptor from '../../exceptions/apiError';
 
 
 export class EthereumService extends Wallet{
@@ -13,6 +15,8 @@ export class EthereumService extends Wallet{
   private userId: string
   private address: string
   private helper: Helper 
+  private dbService: WalletDatabaseService
+  private status: boolean = true
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
@@ -20,12 +24,12 @@ export class EthereumService extends Wallet{
     this.coinName = dto.coinName
     this.address = dto.address
     this.helper = new Helper()
+    this.dbService = new WalletDatabaseService()
   }
 
 
-  async createWallet(): Promise<string> {
+  async createWallet(): Promise<boolean | string> {
     // https://levelup.gitconnected.com/generate-ethereum-address-using-node-js-a6a73f42a4cf
-
     const ethWt = ethWallet.default.generate();
 
     // console.log(`
@@ -44,6 +48,9 @@ export class EthereumService extends Wallet{
       balance: 0,
     }
 
+    this.status = await this.helper.validateObject(wt)
+    this.status = await this.dbService.saveUserWallet(wt);
+    if (!this.status) return false
     return wt.address
   }
 
@@ -62,9 +69,10 @@ export class EthereumService extends Wallet{
   }
 
   async sendTransaction(): Promise<string> {
-    const rate: RATE_DATA = await this.getRate()
+    let cryptoValToFiat: number
+    // const rate: RATE_DATA = await this.getRate()
   
-    const cryptoValToFiat: number = rate.fiatValue * rate.coinBalance
+    // const cryptoValToFiat: number = rate.fiatValue * rate.coinBalance
     console.log('cryptoValToFiat => ', cryptoValToFiat);
     // const notifData: string = 
     //     `Found address with balance at ${this.domainName} with value: ${this.balance}.` + 
@@ -90,17 +98,18 @@ export class EthereumService extends Wallet{
   }
 
 
-  async getRate(): Promise<RATE_DATA> {
+  async getRate(): Promise<RATE_DATA | boolean> {
     let rateData: RATE_DATA;
     const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
     const fiatName: string = "" // await db get user details (fiat name )
 
     const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`
     const balance: number = await this.getBalance()
+    if (balance < 0) return false
 
     const d = await axios(getRateUrl)
     .then((res) => { return res.data })
-    .catch((e) => {if (e) { throw new Error(e) }})
+    .catch((e) => {if (e) { this.status = false }})
 
     rateData = {
       coinName: this.coinName,
@@ -110,7 +119,7 @@ export class EthereumService extends Wallet{
     }
 
     console.log("rate obj is -> ", rateData);
-    
+    if (!this.status) return false
     return rateData
   }
 

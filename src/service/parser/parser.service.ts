@@ -1,62 +1,81 @@
-// import database from './database/wallet.db.service'
-// import Balance from '../crypto.lib/baseUsage/Balances'
-// import ApiError from '../exceptions/apiError'
-// import Transaction from '../crypto.lib/baseUsage/Transactions'
-// import { TSX_DATA } from '../types/wallet/transactionData.interface'
+import cryptoService from "../crypto/crypto.service"
+import { WalletDatabaseService } from "../database/wallet.db.service"
+import ErrorInterceptor from "src/exceptions/apiError"
 
-// // https://www.geeksforgeeks.org/how-to-handle-child-threads-in-node-js/
+import { WALLET } from "../../types/wallet/wallet.types"
 
-// export async function balanceParser(): Promise<void> {
-//   const curDate: number = new Date().getTime()
-//   const fromStamp: number = curDate - (1000 * 60 * 60 * 48)
-//   const toStamp: number = curDate + (1000 * 60 * 60 * 48)
+// https://www.geeksforgeeks.org/how-to-handle-child-threads-in-node-js/
 
-//   console.log(`
-//     cur  date => ${fromStamp},
-//     curStamp => ${toStamp}
-//   `);
 
-//   const depositList: any = await database.getDepositWalletList(fromStamp, toStamp)
-//   if (!depositList.length) throw await ApiError.NotFoundError('deposit wallet')
+type wtBalanceStruct = {
+  coinName: string
+  address: string
+  balance: number
+}
 
-//   balanceFinding: for (let i: number = 0; i <= depositList.length - 1; i++) {
-//     console.log('list iter is => ', depositList[i]);
-//     const coin: string = depositList[i].coin_name
-//     const address: string = depositList[i].wallet_address
+export class BalanceParser {
+  private coinName: string
+  private stamp: number
+  private fromStamp: number
+  private wtList: WALLET[]
+  private balances: wtBalanceStruct[]
+  private databaseService: WalletDatabaseService
 
-//     const balanceValue: number = await new Balance(coin, address).CheckBalance()
-		
-// 		if (balanceValue !== 0) {	
-// 			const dataObj: TSX_DATA = {
-// 				coinName: depositList[i].coin_name,
-//         domainName: depositList[i].domain_name,
-// 				fromAddress: depositList[i].wallet_address,
-//         keyData: {
-//           privateKey: depositList[i].private_key,
-//           publicKey: depositList[i].public_key
-//         },
-// 				userId: depositList[i].user_id,
-// 				balance: balanceValue
-// 			}
 
-// 			const sendCrypto = new Transaction(dataObj).sendTransaction()
-// 			console.log('sendCrypto result is => ', sendCrypto);
-// 		} else {
-// 			continue balanceFinding;
-// 		}
-   
-//   } // end of balanceFinding loop < --------------
+  constructor(coinName: string){
+    this.coinName = coinName
+    this.databaseService = new WalletDatabaseService()
+  }
 
-//   console.log('parser was done.');
-//   return
-// }
+  // setParams -> set dates range
+  async setParams(): Promise<void> {
+    this.stamp = new Date().getTime()
+    this.fromStamp = this.stamp - (1000 * 60 * 60 * 48)
+  }
 
-// // parentPort.on('message', async (data): Promise<any> => {
-// //   console.log('data is => ', data);
-// //   await balanceParser()
-// //   parentPort.close()
-// //   parentPort.on('close', () => {
-// //     console.log('parser works is done.')
-// //     return true
-// //   })
-// // })
+  // getWalletListByParams -> get wallets from database by setted params
+  async getWalletListByParams(): Promise<void> {
+    let walletList: any = await this.databaseService.getWalletList(this.coinName, this.fromStamp)
+    if(!walletList) return
+    if(!walletList.length) {
+      console.log("empty set. wallet list len is -> ", walletList.length);
+      return
+    }
+    this.wtList = walletList
+  }
+
+  // getWalletBalances -> get balances, update wallet statuses and push balances in <this.balances> array
+  async getWalletBalances(): Promise<void> {
+    balanceSeeker: for (let i = 0; i <= this.wtList.length -1; i++) {
+      let balance: number = await cryptoService.getBalance({coinName: this.coinName, address: this.wtList[i].address})
+      if(balance < 0) 
+        throw await ErrorInterceptor.ServerError(`
+          getWalletBalances was failed. The wallet is: 
+          coinName: ${this.coinName}, 
+          address: ${this.wtList[i].address}`
+        )
+      if(balance = 0) await this.databaseService.updateWalletStatus(this.wtList[i].address, false, true)
+      if(balance > 0) {
+        this.balances.push({coinName: this.coinName, address: this.wtList[i].address, balance: balance})
+        // await this.databaseService.updateWalletStatus(this.) // -> update balance data in tables & update updatedAt
+        await this.databaseService.updateWalletStatus(this.wtList[i].address, true, true)
+      }
+      continue balanceSeeker;
+    }
+  }
+
+  // getCoinsFromWallet -> run through the <this.balances> and call <sendTransaction> here to send the coins from wallet to owner 
+  async getCoinsFromWallet(): Promise<void> {
+    console.log("balance array length is -> ", this.balances.length);
+    let result: string | boolean = await cryptoService.sendManualTransaction({coinName: this.coinName, address: this.balances[0].address})
+    if(!result) 
+      throw await ErrorInterceptor.ServerError(`
+        getCoinsFromWallet was failed. The wallet is: 
+        coinName: ${this.balances[0].coinName}, 
+        address: ${this.balances[0].address}`
+      )
+      
+    this.balances.shift()
+    await this.getCoinsFromWallet()
+  }
+}

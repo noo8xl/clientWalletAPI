@@ -1,10 +1,13 @@
 // import TonWeb from "tonweb";
+import axios from "axios";
 import { WalletContractV4, TonClient, Address } from "@ton/ton";
 import { mnemonicNew , KeyPair, mnemonicToWalletKey } from "ton-crypto";
 import {Wallet} from "./wallet.service";
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet.types";
 import { Helper } from "../../helpers/helper";
-import axios from "axios";
+import { WalletDatabaseService } from "../database/wallet.db.service"
+import ErrorInterceptor from '../../exceptions/apiError';
+
 
 export class TheOpenNetworkService extends Wallet {
   coinName: string
@@ -12,6 +15,8 @@ export class TheOpenNetworkService extends Wallet {
   private address: string
   private helper: Helper
   private client: TonClient
+  private dbService: WalletDatabaseService
+  private status: boolean = true
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
@@ -19,14 +24,14 @@ export class TheOpenNetworkService extends Wallet {
     this.coinName = dto.coinName
     this.address = dto.address
     this.helper = new Helper()
+    this.dbService = new WalletDatabaseService()
     this.client = new TonClient({endpoint: "testnet"})
     // this.client = new TonClient({endpoint: "mainnet"})
   }
 
 
-  async createWallet(): Promise<string> {
+  async createWallet(): Promise<boolean | string> {
     // https://ton-community.github.io/tutorials/01-wallet/ 
-
     const mnemonics: string[] = await mnemonicNew();
     const keyPair: KeyPair = await mnemonicToWalletKey(mnemonics);
 
@@ -43,6 +48,9 @@ export class TheOpenNetworkService extends Wallet {
       balance: 0,
     }
 
+    this.status = await this.helper.validateObject(wt)
+    this.status = await this.dbService.saveUserWallet(wt);
+    if (!this.status) return false
     return wt.address
   }
 
@@ -58,9 +66,9 @@ export class TheOpenNetworkService extends Wallet {
   }
 
   async sendTransaction(): Promise<string> {
-
-    const rate: RATE_DATA = await this.getRate()
-    const cryptoValToFiat: number = rate.fiatValue * rate.coinBalance
+    let cryptoValToFiat: number
+    // const rate: RATE_DATA = await this.getRate()
+    // const cryptoValToFiat: number = rate.fiatValue * rate.coinBalance
     console.log('cryptoValToFiat => ', cryptoValToFiat);
     // const notifData: string = 
     //     `Found address with balance at ${this.domainName} with value: ${this.balance}.` + 
@@ -102,8 +110,7 @@ export class TheOpenNetworkService extends Wallet {
     return ""
   }
 
-  async getRate(): Promise<RATE_DATA> {
-    let rateData: RATE_DATA;
+  async getRate(): Promise<RATE_DATA | boolean> {
     const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
     const fiatName: string = "" // await db get user details (fiat name )
 
@@ -112,9 +119,9 @@ export class TheOpenNetworkService extends Wallet {
 
     const d = await axios(getRateUrl)
     .then((res) => { return res.data })
-    .catch((e) => {if (e) { throw new Error(e) }})
+    .catch((e) => {if (e) { this.status = false }})
 
-    rateData = {
+    const rateData: RATE_DATA = {
       coinName: this.coinName,
       fiatName: fiatName, 
       coinBalance: balance,
@@ -122,7 +129,7 @@ export class TheOpenNetworkService extends Wallet {
     }
 
     console.log("rate obj is -> ", rateData);
-    
+    if (!this.status) return false
     return rateData
   }
 }

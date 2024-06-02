@@ -12,6 +12,8 @@ type BITCOIN_WALLET = {
   publicKey: string // Buffer ->  available str value with toString()
   seedPhrase?: string // Buffer ->  available str value with toString()
   mnemonic?: string
+  // isUsed: boolean // if wallet has ballance 
+  // isChecked: boolean // if wallet was checked by balance parser 
   balance: number
 }
 
@@ -70,7 +72,7 @@ export type RATE_DATA = {
   fiatValue: number
 }
 export type WALLET_REQUEST_DTO = {
-  userId: string
+  userId?: string
   coinName: string
   address?: string
 }

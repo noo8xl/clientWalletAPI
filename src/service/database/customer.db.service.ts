@@ -7,7 +7,7 @@ import { CacheService } from "../cache/cache.service";
 import ErrorInterceptor  from "../../exceptions/apiError";
 import ActionModel from "../../models/Action.model";
 import CustomerModel from "../../models/Customer.model";
-import { connect, disconnect } from "mongoose";
+import mongoose from "mongoose";
 
 
 export class CustomerDatabaseService {
@@ -15,6 +15,7 @@ export class CustomerDatabaseService {
   private readonly actionsModel = ActionModel
   private readonly customerModel = CustomerModel
 
+  private status: boolean = true
   private helper: Helper
   private cacheService: CacheService
   private notificator: TelegramNotificationApi
@@ -23,24 +24,28 @@ export class CustomerDatabaseService {
     this.helper = new Helper()
     this.cacheService = new CacheService()
     this.notificator = new TelegramNotificationApi()
-    connect(MONGO_DB.link)
   }
 
   // findUserByFilter -> find user data by dto object filter ex => {userId: '123', userEmail: 'ex@mail.net'}
-  public async findUserByFilter(filter: any): Promise<CUSTOMER>{
+  public async findUserByFilter(filter: any): Promise<boolean>{
+    await this.initConnection()
     try {
-      await this.helper.validateObject(filter)
-      return await this.customerModel.findOne(filter)
+      this.status = await this.helper.validateObject(filter)
+      const result: CUSTOMER = await this.customerModel.findOne(filter)
+      if (!result) this.status = false
     } catch (e) {
-      throw await ErrorInterceptor.ServerError("selection")
+      console.log("cached error \n-> ", e);
+      return false
     } finally {
-      await disconnect()
+      await this.disconnectClient()
+      return this.status
     }
   }
 
 
   // saveNewClient -> save new api user to db using mongoDB
-	public async saveNewClient(userDto: CUSTOMER ): Promise<void>  {
+	public async saveNewClient(userDto: CUSTOMER ): Promise<boolean>  {
+    await this.initConnection()
     let actionLog: CUSTOMER_ACTION = {
       userId: "",
       date: this.stamp,
@@ -49,7 +54,8 @@ export class CustomerDatabaseService {
     }
 
     try {
-      await this.helper.validateObject(userDto)  
+      this.status = await this.helper.validateObject(userDto)  
+      if(!this.status) return false
       const result = await this.customerModel.create(userDto)
       actionLog.userId = result._id.toString()
 
@@ -58,17 +64,20 @@ export class CustomerDatabaseService {
       //   value: userDto.apiKey, // using as value 
       // }
 
-      // await this.cacheService.setSessionData(cache)
+      // this.status =  await this.cacheService.setSessionData(cache)
       await this.saveUserLogsData(actionLog)
-    } catch (error) {
-      // throw await ErrorInterceptor.ServerError("save client")
+    } catch (e) {
+      console.log("cached error \n-> ", e);
+      this.status = false
     } finally {
-      await disconnect()
+      await this.disconnectClient()
+      return this.status
     }
 	}
 
   // updateCustomerProfile -> update fields in customer document 
-  public async updateCustomerProfile(userDto: any): Promise<void> {
+  public async updateCustomerProfile(userDto: any): Promise<boolean> {
+    await this.initConnection()
     let actionLog: CUSTOMER_ACTION = {
       userId: userDto.userId,
       date: this.stamp,
@@ -77,11 +86,12 @@ export class CustomerDatabaseService {
     }
 
     try {
-      await this.helper.validateObject(userDto)
+      this.status = await this.helper.validateObject(userDto)
+      
       const result = await this.customerModel.findOneAndUpdate(
         userDto.filter,
         userDto.doc,
-        // {returnOriginal: false}
+        { returnOriginal: false }
       )
 
       if (!result) {
@@ -90,16 +100,19 @@ export class CustomerDatabaseService {
       }
 
       await this.saveUserLogsData(actionLog)
-    } catch (error) {
-      throw await ErrorInterceptor.ServerError("updating")
+    } catch (e) {
+      console.log("cached error \n-> ", e);
+      this.status = false
     } finally {
-      await disconnect()
+      await this.disconnectClient()
+      return this.status
     }
 
   }
 
   // getActionHistory -> get user action history by setted params
-  public async getActionHistory(userDto: GET_ACTIONS_LIST): Promise<CUSTOMER_ACTION[]> {
+  public async getActionHistory(userDto: GET_ACTIONS_LIST): Promise<CUSTOMER_ACTION[] | boolean> {
+    await this.initConnection()
     try {
       const result = await this.actionsModel
       .find({ userId: userDto.userId })
@@ -108,21 +121,25 @@ export class CustomerDatabaseService {
       .exec()
       return result
     } catch (e) {
-      throw await ErrorInterceptor.ServerError("selection")
+      console.log("cached error \n-> ", e);
+      this.status = false
     } finally {
-      await disconnect()
+      await this.disconnectClient()
+      return this.status
     }
   }
 
   // saveUserLogsData -> save customer actions log to db
   public async saveUserLogsData(actionLog: CUSTOMER_ACTION): Promise<void> {
+    // await this.initConnection()
     try {
-      await this.helper.validateObject(actionLog)
+      this.status = await this.helper.validateObject(actionLog)
       await this.actionsModel.create(actionLog)
     } catch (e) {
-      throw await ErrorInterceptor.ServerError("log saving")
+      console.log("cached error \n-> ", e);
+      this.status = false
     } finally {
-      await disconnect()
+      await this.disconnectClient()
     }
   }
 
@@ -130,25 +147,11 @@ export class CustomerDatabaseService {
   // ############################################# private usage area ############################################ //
   // ============================================================================================================= //
 
+  private async initConnection(): Promise<void> {
+    await mongoose.connect(MONGO_DB.link)
+  }
 
-  // private async initConnection(): Promise<void> {
-  //   const uri: string = await this.getMongoUri()
-  //   console.log("uri -> ", uri);
-    
-  //   if (!uri) return await this.errorHandler.ServerError("Customer DB connection")
-  //   this.db = new MongoClient(uri)
-  // }
-
-  // private async disconnectClient(): Promise<void> {
-  //   await this.db.close()
-  // }
-
-  // private async getMongoUri(): Promise<string> {
-  //   let template = this.mongoUri
-    
-  
-  //   let temp = template.replace("<userName>", this.dbUser)
-  //   let uri = temp.replace("<userPassword>", this.dbPassword)
-  //   return uri
-  // }
+  private async disconnectClient(): Promise<void> {
+    await mongoose.disconnect()
+  }
 }

@@ -1,37 +1,5 @@
 import { TelegramNotificationApi } from '../api/notificationCall.api'
 
-
-// // // errors.js
-// class TestInterceptor extends Error { // parent error
-//   name: string
-//   type: string
-//   statusCode: number
-
-//   constructor(message: string, statusCode: number) {
-//       super();
-//       this.name = this.constructor.name // good practice
-
-//       if (this instanceof LongTitleError) // checking if title or body
-//           this.type = 'title'
-//       else if (this instanceof LongBodyError)
-//           this.type = 'body'
- 
-//     this.message = message// detailed error message
-//     this.statusCode = statusCode // error code for responding to client
-//   }
-// }
-
-// // extending to child error classes
-// class LongTitleError extends TestInterceptor { }
-// class LongBodyError extends TestInterceptor { }
-
-// module.exports = {
-//     TestInterceptor,
-//     LongTitleError,
-//     LongBodyError
-// }
-
-
 // ErrorInterceptor -> handle an API errors
 export default class ErrorInterceptor extends Error {
 

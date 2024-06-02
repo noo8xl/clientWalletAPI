@@ -3,7 +3,7 @@ type FIAT_NAME = "AUD" | "USD" | "EUR" |"RUB" |"AED"
 type ACTION_STATUS = "success" | "failed" | "pemding"
 
 export type CUSTOMER = {
-  userId?: string
+  _id?: string
   userEmail: string
   domainName: string
   companyName: string

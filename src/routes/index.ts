@@ -36,8 +36,6 @@ router.patch(
 	customerController.revokeAnAccess)
 
 
-
-
 // ###################### wallet area ######################
 
 // generate single address by coinName for cur userId

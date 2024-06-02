@@ -3,9 +3,10 @@ import { CUSTOMER_ACTION, GET_ACTIONS_LIST } from "../../types/customer/customer
 import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "../../types/database/db.response.types";
 import { CustomerDatabaseService } from "../database/customer.db.service";
 import { CacheService } from "../cache/cache.service";
+import ErrorInterceptor from "src/exceptions/apiError";
 
 
-export class CustomerServise {
+class CustomerService {
   private readonly stamp: number = new Date().getTime()
   private helper: Helper
   private cacheService: CacheService
@@ -18,31 +19,31 @@ export class CustomerServise {
   }
 
   // revokeApiAccess -> revoke customer api key
-  public async revokeApiAccess(userId: string): Promise<void> {
+  public async revokeApiAccess(userId: string): Promise<boolean> {
 
     let dbDto = {
-      filter: { userId },
+      filter: { _id: userId },
       doc: { isActive: false, apiKey: "", updatedAt: this.stamp },
     }
 
-    await this.customerDb.updateCustomerProfile(dbDto)
     await this.cacheService.clearCachedDataByKey(userId)
+    return await this.customerDb.updateCustomerProfile(dbDto)
   }
 
   // changeFiatDisplay -> change fiat name display to another currency
-  public async changeFiatDisplay(userDto: any): Promise<void> {
+  public async changeFiatDisplay(userDto: any): Promise<boolean> {
     await this.helper.validateObject(userDto)
 
     let dbDto = {
-      filter: { userId: userDto.userId },
+      filter: { id: userDto.userId },
       doc: { fiatName: userDto.fiatName, updatedAt: this.stamp },
     }
 
-    await this.customerDb.updateCustomerProfile(dbDto)
+    return await this.customerDb.updateCustomerProfile(dbDto)
   }
 
   // getActionsData -> get customer actions data history
-  public async getActionsData(userDto: GET_ACTIONS_LIST): Promise<DB_SELECT_RESPONSE> {
+  public async getActionsData(userDto: GET_ACTIONS_LIST): Promise<CUSTOMER_ACTION[] | boolean> {
     await this.helper.validateObject(userDto)
     let result: DB_SELECT_RESPONSE = await this.customerDb.getActionHistory(userDto)
     return result
@@ -54,5 +55,6 @@ export class CustomerServise {
     await this.customerDb.saveUserLogsData(actionLog)
   }
 
-
 }
+
+export default new CustomerService()

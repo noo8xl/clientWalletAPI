@@ -1,12 +1,13 @@
 import * as bip32 from 'bip32'
 import * as bip39 from 'bip39'
 import * as bitcoin from 'bitcoinjs-lib'
-import bchaddr from 'bchaddrjs'
+// import bchaddr from 'bchaddrjs'
 
 import {Wallet} from "./wallet.service";
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from '../../types/wallet/wallet.types';
 import axios from 'axios';
 import { Helper } from '../../helpers/helper';
+import { WalletDatabaseService } from "../database/wallet.db.service"
 
 
 // BitcoinService -> implements btc blockchain manipulation
@@ -15,6 +16,8 @@ export class BitcoinService extends Wallet {
   private userId: string
   private address: string
   private helper: Helper
+  private dbService: WalletDatabaseService
+  private status: boolean = true;
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
@@ -22,10 +25,11 @@ export class BitcoinService extends Wallet {
     this.coinName = dto.coinName
     this.address = dto.address
     this.helper = new Helper()
+    this.dbService = new WalletDatabaseService()
   }
 
 
-  public async createWallet(): Promise<string> {
+  public async createWallet(): Promise<string | boolean> {
     // https://javascript.plainenglish.io/generate-your-own-bitcoin-wallet-within-5-minutes-3c36176b47ee?gi=c00ebff5e60f
     // https://github.com/bitpay/bitcore/tree/master/packages/bitcore-lib
     // https://github.com/BitGo/BitGoJS/tree/master/modules/utxo-lib
@@ -48,7 +52,7 @@ export class BitcoinService extends Wallet {
     
 
     // https://www.npmjs.com/package/bchaddrjs
-    const bchAddress = bchaddr.toCashAddress(btcAddress).split(':')[1]
+    // const bchAddress = bchaddr.toCashAddress(btcAddress).split(':')[1]
 
     const wt: WALLET = {
       userId:  this.userId,
@@ -69,14 +73,18 @@ export class BitcoinService extends Wallet {
     //   publicKey: '',
     // }\
 
-    console.log(`
-      Generated data is:
-      - bch address : ${bchAddress}
-      - btc obj: ${wt},
-    `);
-    
-    // await database.saveWallet(wt);
+    // console.log(`
+    //   Generated data is:
+    //   - bch address : ${bchAddress}
+    //   - btc obj: ${wt},
+    // `);
 
+    this.status = await this.helper.validateObject(wt)
+    console.log(`this status: ${this.status}`);
+    
+    // this.status = await this.dbService.saveUserWallet(wt);
+
+    if (!this.status) return false
     return wt.address
   }
 
@@ -84,7 +92,7 @@ export class BitcoinService extends Wallet {
 
     const coinData: any = await axios(`https://blockchain.info/balance?active=${this.address}`)
       .then((res) => { return { balanceData: res.data, status: res.status }})
-      .catch((e) => {if (e) { throw new Error(e) }})
+      .catch((e) => {if (e) { this.status = false }})
 
     console.log('coinData => ', coinData);
     
@@ -99,6 +107,7 @@ export class BitcoinService extends Wallet {
     }
 
     console.log('received balance: ', balance);
+    if (!this.status) return -1
     return Number(balance)
   }
 
@@ -112,9 +121,10 @@ export class BitcoinService extends Wallet {
   }
 
   public async sendTransaction(): Promise<string> {
-    const rate: RATE_DATA = await this.getRate()
+    let cryptoValToFiat: number
+    // const rate: RATE_DATA = await this.getRate()
   
-    const cryptoValToFiat: number = rate.fiatValue * rate.coinBalance
+    // const cryptoValToFiat: number = rate.fiatValue * rate.coinBalance
     console.log('cryptoValToFiat => ', cryptoValToFiat);
     // const notifData: string = 
     //     `Found address with balance at ${this.domainName} with value: ${this.balance}.` + 
@@ -135,17 +145,18 @@ export class BitcoinService extends Wallet {
     }
   }
 
-  public async getRate(): Promise<RATE_DATA> {
+  public async getRate(): Promise<RATE_DATA | boolean> {
     let rateData: RATE_DATA;
     const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
     const fiatName: string = "" // await db get user details (fiat name )
 
     const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`
     const balance: number = await this.getBalance()
+    if(balance < 0) return false
 
     const d = await axios(getRateUrl)
     .then((res) => { return res.data })
-    .catch((e) => {if (e) { throw new Error(e) }})
+    .catch((e) => {if (e) { this.status = false }})
 
     rateData = {
       coinName: this.coinName,
@@ -155,7 +166,7 @@ export class BitcoinService extends Wallet {
     }
 
     console.log("rate obj is -> ", rateData);
-    
+    if (!this.status) return false
     return rateData
   }
 

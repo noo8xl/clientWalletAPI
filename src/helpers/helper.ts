@@ -1,5 +1,5 @@
 import { availableCoins } from "../config/configs";
-// import ErrorInterceptor  from "../exceptions/apiError";
+import ErrorInterceptor  from "../exceptions/apiError";
 
 
 export class Helper {
@@ -11,11 +11,12 @@ export class Helper {
 
 
   // validateObject -> validate if object keu has an undefined value 
-  async validateObject(obj: any): Promise<void> {
+  async validateObject(obj: any): Promise<boolean> {
       for (let i in obj) {
-        if (obj[i] === undefined) return // throw await this.errorHandler.BadRequest("Found an undefined value")
+        if (obj[i] === undefined) return false
         if (typeof obj[i] === "object") await this.validateObject(obj[i])
       }
+    return true
   }
   
   //getCoinApiName -> get coin full name from coinName to use in API request at getRate *
@@ -27,9 +28,7 @@ export class Helper {
       } else {
         return availableCoins[i].coinApiName
       }
-    }   
-
-    // throw await this.errorHandler.NotFoundError()
+    }
   }
 
 

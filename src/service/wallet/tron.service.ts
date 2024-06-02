@@ -1,11 +1,11 @@
 const TronWeb = require('tonweb')
-
+import axios, { AxiosRequestHeaders } from 'axios';
 import { TRON_API_KEY } from "../../config/configs";
 import {Wallet} from "./wallet.service";
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet.types";
-import axios, { AxiosRequestHeaders } from 'axios';
 import { Helper } from '../../helpers/helper';
-
+import { WalletDatabaseService } from "../database/wallet.db.service"
+import ErrorInterceptor from '../../exceptions/apiError';
 
 export class TronService extends Wallet {
   coinName: string
@@ -13,6 +13,9 @@ export class TronService extends Wallet {
   private userId: string
   private address: string
   private helper: Helper
+  private dbService: WalletDatabaseService
+  private status: boolean = true
+
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
@@ -20,11 +23,12 @@ export class TronService extends Wallet {
     this.coinName = dto.coinName
     this.address = dto.address
     this.helper = new Helper()
+    this.dbService = new WalletDatabaseService()
   }
 
-  async createWallet(): Promise<string> {
+  async createWallet(): Promise<boolean | string> {
     // https://www.npmjs.com/package/tronweb
-
+    let result: ErrorInterceptor | string;
     const tronWeb = new TronWeb({
       fullHost: 'https://api.trongrid.io/',
       headers: { "TRON-PRO-API-KEY": this.tronApiKey }
@@ -42,16 +46,17 @@ export class TronService extends Wallet {
     const wt: WALLET = {
       userId: this.userId,
       coinName: "Tron",
-      address: trxAccount.address.base58,
+      address: trxAccount.address.base58.toString(),
       privateKey: trxAccount.privateKey,
       publicKey: trxAccount.publicKey,
       balance: 0,
     }
 
 
-    // await database.saveWallet(trxObject)
-
-    return wt.address.toString()
+    this.status = await this.helper.validateObject(wt)
+    this.status = await this.dbService.saveUserWallet(wt);
+    if (!this.status) return false
+    return wt.address
   }
 
   async getBalance(): Promise<number> {
@@ -78,9 +83,10 @@ export class TronService extends Wallet {
   }
 
   async sendTransaction(): Promise<string> {
-    const rate: RATE_DATA = await this.getRate()
+    let cryptoValToFiat: number;
+    // const rate: RATE_DATA = await this.getRate()
   
-    const cryptoValToFiat: number = rate.fiatValue * rate.coinBalance
+    // const cryptoValToFiat: number = rate.fiatValue * rate.coinBalance
     console.log('cryptoValToFiat => ', cryptoValToFiat);
     // const notifData: string = 
     //     `Found address with balance at ${this.domainName} with value: ${this.balance}.` + 
@@ -105,17 +111,18 @@ export class TronService extends Wallet {
     return ""
   }
 
-  async getRate(): Promise<RATE_DATA> {
+  async getRate(): Promise<RATE_DATA | boolean> {
     let rateData: RATE_DATA;
     const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
     const fiatName: string = "" // await db get user details (fiat name )
 
     const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`
     const balance: number = await this.getBalance()
+    if(balance < 0) return false
 
     const d = await axios(getRateUrl)
     .then((res) => { return res.data })
-    .catch((e) => {if (e) { throw new Error(e) }})
+    .catch((e) => {if (e) { this.status = false }})
 
     rateData = {
       coinName: this.coinName,
@@ -125,7 +132,7 @@ export class TronService extends Wallet {
     }
 
     console.log("rate obj is -> ", rateData);
-    
+    if (!this.status) return false
     return rateData
   }
 

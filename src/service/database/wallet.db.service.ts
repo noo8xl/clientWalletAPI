@@ -2,10 +2,10 @@
 
 import mysql, { ResultSetHeader, QueryError, RowDataPacket } from 'mysql2'
 import { TelegramNotificationApi } from '../../api/notificationCall.api';
-import { MYSQL_DB, coinList } from '../../config/configs';
+import { MYSQL_DB } from '../../config/configs';
 import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from '../../types/database/db.response.types';
 import { WALLET } from '../../types/wallet/wallet.types';
-import ErrorInterceptor from 'src/exceptions/apiError';
+import ErrorInterceptor from '../../exceptions/apiError';
 
 
 export class WalletDatabaseService {
@@ -14,6 +14,7 @@ export class WalletDatabaseService {
 	private readonly dbUser = MYSQL_DB.userName
 	private readonly dbPassword = MYSQL_DB.userPassword
 	private readonly dbName = MYSQL_DB.databaseName
+	private status: boolean = true;
 
 	private notificator: TelegramNotificationApi
 
@@ -22,38 +23,6 @@ export class WalletDatabaseService {
 		this.initConnection() 
 	}
 
-
-	// saveUserWallet -> save wallet to db for current user
-	public async saveUserWallet(walletDto: WALLET): Promise<DB_INSERT_RESPONSE> {
-		let result: DB_INSERT_RESPONSE;
-		const sql: string = `
-      INSERT INTO WalletList 
-      ( coinName, address, privateKey, publicKey, seedPhrase, mnemonic, userId ) 
-      VALUES 
-      (?, ?, ?, ?, ?, ?, ?)
-    `;
-
-		let listOfValues = [
-			walletDto.coinName,
-			walletDto.address,
-			walletDto.privateKey,
-			walletDto.publicKey,
-			"",
-			"",
-			walletDto.userId,
-		]
-
-		// could be refactored  ? * <--------------------------------------------------------------------------------------------------
-		if ( walletDto.seedPhrase !== "" && walletDto.mnemonic !== "") {
-			listOfValues[4] = walletDto.seedPhrase
-			listOfValues[5] = walletDto.mnemonic
-		}
-
-		result = await this.insertData(sql, listOfValues)
-		
-		this.closeConnection()
-		return result
-	}
 
 	// // saveUserWallet -> save each wallet to db for current user and domain
 	// public async saveUserWallet(walletArr: WALLET): Promise<ResultSetHeader | QueryError> {
@@ -79,76 +48,127 @@ export class WalletDatabaseService {
 	// 		result = await this.dbInteract.insertData()
 	// 	}
 		
-	// 	this.closeConnection()
+	// 	await this.closeConnection()
 	// 	return result
 	// }
 
 
-	// getWalletPrivateKey -> get private key to sign and send transaction
-  async getWalletPrivateKey(address: string, coinName: string): Promise<DB_SELECT_RESPONSE>  {
-		let result: DB_SELECT_RESPONSE;
+	// saveUserWallet -> save wallet to db for current user
+	public async saveUserWallet(walletDto: WALLET): Promise<boolean> {
+		
+		// searchWalletql -> filter to get saved wallet id 
+		const searchWalletql: string = `
+			SELECT id, 
+			FROM WalletList
+			WHERE address = ?
+		`;
+
+		const walletListSql: string = `
+			INSERT INTO WalletList 
+      ( coinName, address, userId )
+      VALUES 
+      (?, ?, ?)
+		`;
+
+		const walletDetailSql: string = `
+			INSERT INTO WalletDetails
+			( privateKey, publicKey, seedPhrase, mnemonic, walletId )
+			VALUES 
+			(?, ?, ?, ?, ?)
+		`;
+
+		const walletParamsSql: string = `
+		INSERT INTO WalletParams 
+		( isUsed, isChecked, balance, createdAt, walletId )
+		VALUES 
+		(?, ?, ?, ?, ?)
+		`;
+
+		const walletListVals = [
+			walletDto.coinName,
+			walletDto.address,
+			walletDto.userId,
+		]
+		
+		let walletDetailVals = [
+			walletDto.privateKey,
+			walletDto.publicKey,
+			"",
+			"",
+		]
+		let walletParamsVals = [
+			false,
+			false,
+			0,
+			new Date().getTime(),
+		]
+		
+		await this.insertData(walletListSql, walletListVals)
+		let result = await this.selectData(searchWalletql, [walletDto.address])
+		if(!this.status) {
+			await this.notificator.sendErrorMessage("wallet db selection")
+			return false
+		}
+		walletDetailVals.push(result[0])
+		walletParamsVals.push(result[0])
+
+		// // could be refactored  ? * <--------------------------------------------------------------------------------------------------
+		if ( walletDto.seedPhrase !== "" && walletDto.mnemonic !== "") {
+			walletDetailVals[2] = walletDto.seedPhrase
+			walletDetailVals[3] = walletDto.mnemonic
+		}
+
+		await this.insertData(walletDetailSql, walletDetailVals)
+		await this.insertData(walletParamsSql, walletParamsVals)
+
+		await this.closeConnection()
+		return this.status
+	}
+
+
+	async getWalletList(coinName: string, fromStamp: number): Promise<WALLET[] | boolean> {
+
+
+		// https://dev.mysql.com/doc/refman/8.0/en/multiple-tables.html
 
 		const sql: string = `
-			SELECT privateKey, 
+			SELECT address, 
 			FROM WalletList
+			WHERE coinName = ?
+			AND createdAt >= ?
+		`;
+
+		const result: WALLET[] = await this.selectData(sql,[ coinName, fromStamp ])
+		await this.closeConnection()
+		return result
+	}
+
+	async updateWalletStatus(address: string, isUsed: boolean, isChecked: boolean): Promise<boolean> {
+
+    const sql: string = `
+      UPDATE WalletList 
+      SET isUsed = ?, isChecked = ? 
+      WHERE address = ?
+    `;
+		await this.updateData(sql,[ address, isUsed, isChecked ])
+		await this.closeConnection()
+		return this.status
+	}
+
+
+	// getWalletPrivateKey -> get private key to sign and send transaction
+  async getWalletPrivateKey(address: string, coinName: string): Promise<any>  {
+		const sql: string = `
+			SELECT privateKey, 
+			FROM WalletDetails
 			WHERE address = ?
 			AND coinName = ?
 		`;
 
-		result = await this.selectData(sql,[ address, coinName])
-
-		this.closeConnection()
-		return result
+		const result = await this.selectData(sql,[ address, coinName])
+		await this.closeConnection()
+		return result[0]
 	}
-
-	
-  // async isActiveAddress(coinName: string, userId: string, curDate: number): Promise<RowDataPacket[] | QueryError>  {
-    
-  //   const from: number = curDate - (1000 * 60 * 30)
-  //   const to: number = curDate + (1000 * 60 * 30)
-
-  //   const sql: string = `
-  //     SELECT DISTINCT wallet_address, expired_date 
-  //     FROM wallet_list 
-  //     WHERE coin_name = ?
-  //     AND user_id = ? 
-  //     AND expired_date 
-  //     BETWEEN ?
-  //     AND ? 
-	// 	`;
-	// 	return await this.selectData(sql, [coinName, userId, from, to])
-  // }
-
-	// ___________________________________________________________
-
-
-
-
-
-	//   async changeWalletStatus(userId: string, status: boolean): Promise<OkPacket | QueryError> {
-//     mysql.connect((err: db.QueryError | null) => {
-//       if (err) return console.error(err)
-//       return console.log('mysql database was connected.')
-//     })
-
-//     const sql: string = `
-//       UPDATE crypto_accounts 
-//       SET isActive = ? 
-//       WHERE userId = ?
-//       `;
-//     return new Promise((resolve, reject) => {
-//       mysql.query<OkPacket>(
-//         sql,
-//         [userId, status],
-//         (err: any, result, fields?) => {
-//           if(err) reject(new Error(err))
-//           console.log('result => ',result);
-//           // console.log('field packet => ',fields);
-//           resolve(result)
-//         }
-//       )
-//     })
-//   }
 
 
   // ============================================================================================================= //
@@ -156,46 +176,47 @@ export class WalletDatabaseService {
   // ============================================================================================================= //
 
 
-  private async insertData(sqlString: string, values: any[]): Promise<DB_INSERT_RESPONSE> {
-    
-    try {
-			return new Promise((resolve, reject) => {
-        this.db.query<ResultSetHeader>(
-          sqlString, values,
-          (err: any, result, fields?) => {
-            if(err) reject(new Error(err))
-            console.log('result => ',result);
-            // console.log('field packet => ',fields);
-            resolve(result)
-          }
-        )
-				})
-		} catch (e) {
-			throw await ErrorInterceptor.ServerError("Wallet DB insertion")
-		}
-  }
-
-	private async selectData(sqlString: string, values: any[]): Promise<RowDataPacket[] | QueryError> {
-
-    try {
-      return new Promise((resolve, reject) => {
-        this.db.query<RowDataPacket[]>(
-          sqlString,
-          values,
-          (err: any, result, fields?) => {
-            if(err) reject(new Error(err))
-            console.log('result => ',result);
-            // console.log('field packet => ',fields);
-            resolve(result)
-          }
-        )
-      })
-      
-    } catch (e) {
-      throw await ErrorInterceptor.ServerError("Wallet DB selection")
-    }
+  private async insertData(sqlString: string, values: any[]): Promise<void> {
+		return new Promise((resolve, reject) => {
+			this.db.query<ResultSetHeader>(
+				sqlString, values,
+				async (err: any, result, fields?) => {
+					if(err) reject(this.status = false)
+					console.log("result -> ", result);
+					resolve(null)
+				}
+			)
+		})
 
   }
+
+	private async selectData(sqlString: string, values: any[]): Promise<any> {
+		return new Promise((resolve, reject) => {
+			this.db.query(
+				sqlString,
+				values,
+				async (err: any, result, fields?) => {
+					if(err) reject(this.status = false)
+						console.log("result -> ", result);
+						resolve(null)
+				}
+			)
+		})
+  }
+
+	private async updateData(sqlString: string, values: any[]): Promise<void> {
+		return new Promise((resolve, reject) => {
+      this.db.query<ResultSetHeader>(
+        sqlString,
+        values,
+        (err: any, result, fields?) => {
+          if(err) reject(this.status = false)
+          console.log('result => ',result);
+          resolve(null)
+        }
+      )
+    })
+	}
 
 
   // initConnection -> init mysql connection 
@@ -215,8 +236,10 @@ export class WalletDatabaseService {
 
 	}
 
-	private closeConnection(): void {
-		this.db.destroy()
+	private async closeConnection(): Promise<void> {
+		return new Promise((resolve, reject) => {
+			resolve(this.db.destroy())
+		})
 	}
 
 }

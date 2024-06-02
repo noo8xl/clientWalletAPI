@@ -1,13 +1,12 @@
 
-import ErrorInterceptor  from "../../exceptions/apiError"
 import { CacheService } from "../cache/cache.service"
 import { CustomerDatabaseService } from "../database/customer.db.service"
 import { Helper } from "../../helpers/helper"
-
 import { CACHE_DTO } from "../../types/cache/cache.types"
 import { DB_SELECT_RESPONSE } from "../../types/database/db.response.types"
 import { AUTH_CLIENT_DTO } from "../../types/auth/client.dto.type"
 import { CUSTOMER } from "../../types/customer/customer.types"
+import ErrorInterceptor  from "../../exceptions/apiError"
 
 // AuthService -> handle new customer registration and validate api key with middleware at each request
 class AuthService {
@@ -22,13 +21,9 @@ class AuthService {
     this.customerDb = new CustomerDatabaseService()
   }
 
-  public async signUpNewClient(clientDto: AUTH_CLIENT_DTO): Promise<void> {
+  public async signUpNewClient(clientDto: AUTH_CLIENT_DTO): Promise<void | boolean> {
     const customer: DB_SELECT_RESPONSE = await this.customerDb.findUserByFilter({ userEmail: clientDto.userEmail })
-    // if (customer) { 
-    //   console.log("user already exists")
-    //   return 
-    // }
-    if (customer) throw await ErrorInterceptor.BadRequest("User already exists.")
+    if (customer) return false
 
     // generate an API key for user 
     const API_KEY: string = await this.helper.generatePassword(64)
@@ -50,11 +45,10 @@ class AuthService {
 
   // signInClient ->  validate user session use cache and api key 
   public async signInClient(clientDto: AUTH_CLIENT_DTO): Promise<void> { 
-    let c: CACHE_DTO = await this.cacheService.getCachedData(clientDto.apiKey)
-    if(!c){
-      const candidate: CUSTOMER = await this.customerDb.findUserByFilter(clientDto)
-      if (!candidate) throw await ErrorInterceptor.PermissionDenied("Key to the API checker")
-    } 
+    await this.customerDb.findUserByFilter(clientDto)
+    // let c: CACHE_DTO = await this.cacheService.getCachedData(clientDto.apiKey)
+    // if(!c) return await this.customerDb.findUserByFilter(clientDto)
+    // return null
   }
 }
 
