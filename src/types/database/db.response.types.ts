@@ -1,7 +1,7 @@
 import { InsertOneResult, UpdateResult, WithId } from "mongodb";
 import { QueryError, ResultSetHeader, RowDataPacket } from "mysql2";
 import { CUSTOMER, CUSTOMER_ACTION } from "../customer/customer.types";
-import ErrorInterceptor from "../../exceptions/apiError";
+import ErrorInterceptor from "../../exceptions/Error.exception";
 
 
 // type T = {userId: string}

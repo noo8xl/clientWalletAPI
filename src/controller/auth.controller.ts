@@ -2,7 +2,7 @@
 
 import { NextFunction, Request, Response } from "express"
 import authService from "../service/auth/auth.service"
-import ErrorInterceptor  from "../exceptions/apiError";
+import ErrorInterceptor  from "../exceptions/Error.exception";
 
 class AuthController {
 

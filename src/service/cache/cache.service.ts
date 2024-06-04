@@ -1,8 +1,5 @@
 import { CACHE_DTO } from "../../types/cache/cache.types"
 import { createClient } from "redis";
-// import { ErrorInterceptor } from "../../exceptions/apiError";
-// import { Helper } from "../../helpers/helper";
-
 
 export class CacheService {
   private rdb // -> should be typed
@@ -16,14 +13,14 @@ export class CacheService {
   // ############### -> setters area
 
   // setSessionData -> should be used ONLY for user session 
-  public async setSessionData(dto: CACHE_DTO): Promise<void> {
-    await this.rdb.hSet(dto.apiKey, dto)
-    await this.rdb.disconnect()
-  }
+  // public async setSessionData(dto: CACHE_DTO): Promise<void> {
+  //   await this.rdb.hSet(dto.apiKey, dto)
+  //   await this.rdb.disconnect()
+  // }
 
   // setCachedData -> set date to cache store 
   public async setCachedData(dto: CACHE_DTO): Promise<void> {
-    await this.rdb.hSet(dto.userId, dto)
+    await this.rdb.hSet(dto.userId, dto.isApprove)
     await this.rdb.disconnect()
   }
 
@@ -31,10 +28,11 @@ export class CacheService {
 
   // getCachedData -> could be used with customer <userId> as key 
   // or with <address> as key to get tsx cache data
-  public async getCachedData(key: string): Promise<CACHE_DTO> {
-    let c: CACHE_DTO;
-    let temp = await this.rdb.hGetAll(key)
-    c = JSON.parse(JSON.stringify(temp, null, 2))
+  public async getCachedData(userId: string): Promise<boolean> {
+    let temp = await this.rdb.hGetAll(userId)
+    const c  = JSON.parse(JSON.stringify(temp, null, 2))
+    console.log("cache is -> ", c);
+    
     if (!c) return null
 
     await this.rdb.disconnect()

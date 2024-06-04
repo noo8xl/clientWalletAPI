@@ -1,25 +1,24 @@
 import { NextFunction, Request, Response } from 'express';
 import cryptoService from "../service/crypto/crypto.service";
+import { CacheService } from '../service/cache/cache.service';
 import { WALLET_REQUEST_DTO } from '../types/wallet/wallet.types';
-import ErrorInterceptor  from "../exceptions/apiError";
 
+import ErrorInterceptor  from "../exceptions/Error.exception";
+import { TelegramNotificationApi } from 'src/api/notification.api';
 
 // CryptoController -> handle user request 
 class CryptoController {
 
 	async generateWalletAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
-		console.log("controller");
-		
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
 			coinName: req.params.coinName.toLowerCase().replace('-', '/')
 		}
-		console.log("dto -> ", dto);
 
 		try {
-		const result: string | boolean = await cryptoService.generateOneTimeAddressByCoinName(dto)
-    if (!result) throw await ErrorInterceptor.BadRequest(`Can't send transaction in unknown ${dto.coinName} network or unavailable coin.`) 
-    res.status(201).json({coinName: dto.coinName, address: result}).end()
+			const result: string | boolean = await cryptoService.generateOneTimeAddressByCoinName(dto)
+			if (!result) throw await ErrorInterceptor.BadRequest(`Can't send transaction in unknown ${dto.coinName} network or unavailable coin.`) 
+			res.status(201).json({coinName: dto.coinName, address: result}).end()
 		} catch (e) {
 			next(e)
 		}
@@ -27,7 +26,6 @@ class CryptoController {
 
 
 	async getBalance(req: Request, res: Response, next: NextFunction): Promise<void> {
-
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
 			coinName: req.params.coinName.toLowerCase().replace('-', '/'),
@@ -50,15 +48,9 @@ class CryptoController {
 			address: req.params.address
 		}
 
-		// -> should add telegram 2fa to verify transaction sending by owner
-
-		// -> validate is trans was approved by user or not 
-		// -> if not - send msg as response 
-		// -> if yes -> sign tsx and send tsx info as response
-
-
 		try {
 			const result: boolean | string = await cryptoService.sendManualTransaction(dto)
+			if(typeof result === null) throw await ErrorInterceptor.ExpectationFailed("You should approve this action.")
 			if (!result) throw await ErrorInterceptor.BadRequest(`Can't send transaction in unknown ${dto.coinName} network or unavailable coin.`) 
 			res.status(200).json({coinName: dto.coinName, transactionDetails: result}).end()
 		} catch (e) {

@@ -1,6 +1,6 @@
-import cryptoService from "../crypto/crypto.service"
 import { WalletDatabaseService } from "../database/wallet.db.service"
-import ErrorInterceptor from "src/exceptions/apiError"
+import ErrorInterceptor from "../../exceptions/Error.exception"
+import cryptoService from "../crypto/crypto.service"
 
 import { WALLET } from "../../types/wallet/wallet.types"
 
@@ -13,11 +13,11 @@ type wtBalanceStruct = {
   balance: number
 }
 
-export class BalanceParser {
+export class ParserService {
   private coinName: string
   private stamp: number
   private fromStamp: number
-  private wtList: WALLET[]
+  private wtList: WALLET[] // -> should be updated (type of wtList)
   private balances: wtBalanceStruct[]
   private databaseService: WalletDatabaseService
 

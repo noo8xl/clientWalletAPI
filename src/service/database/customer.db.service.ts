@@ -1,13 +1,13 @@
-import { MongoClient } from "mongodb";
 import { MONGO_DB } from "../../config/configs"
 import { TelegramNotificationApi } from "../../api/notification.api";
 import { Helper } from "../../helpers/helper";
 import { CUSTOMER, CUSTOMER_ACTION, GET_ACTIONS_LIST } from "../../types/customer/customer.types";
 import { CacheService } from "../cache/cache.service";
-import ErrorInterceptor  from "../../exceptions/apiError";
 import ActionModel from "../../models/Action.model";
 import CustomerModel from "../../models/Customer.model";
+
 import mongoose from "mongoose";
+
 
 
 export class CustomerDatabaseService {
@@ -27,18 +27,17 @@ export class CustomerDatabaseService {
   }
 
   // findUserByFilter -> find user data by dto object filter ex => {userId: '123', userEmail: 'ex@mail.net'}
-  public async findUserByFilter(filter: any): Promise<boolean>{
+  public async findUserByFilter(filter: any): Promise<any>{
     await this.initConnection()
     try {
       this.status = await this.helper.validateObject(filter)
       const result: CUSTOMER = await this.customerModel.findOne(filter)
-      if (!result) this.status = false
+      await this.disconnectClient()
+      if (!result) return false
+      return result
     } catch (e) {
       console.log("cached error \n-> ", e);
       return false
-    } finally {
-      await this.disconnectClient()
-      return this.status
     }
   }
 
@@ -115,10 +114,10 @@ export class CustomerDatabaseService {
     await this.initConnection()
     try {
       const result = await this.actionsModel
-      .find({ userId: userDto.userId })
-      .skip(userDto.skip)
-      .limit(userDto.limit)
-      .exec()
+        .find({ userId: userDto.userId })
+        .skip(userDto.skip)
+        .limit(userDto.limit)
+        .exec()
       return result
     } catch (e) {
       console.log("cached error \n-> ", e);

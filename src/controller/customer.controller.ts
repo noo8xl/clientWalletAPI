@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import customerService from "../service/customer/customer.service";
 import { CUSTOMER_ACTION, GET_ACTIONS_LIST } from "../types/customer/customer.types";
-import ErrorInterceptor  from "../exceptions/apiError";
+import ErrorInterceptor  from "../exceptions/Error.exception";
 
 class CustomerComtroller {
 

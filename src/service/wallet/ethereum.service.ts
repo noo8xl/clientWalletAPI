@@ -6,7 +6,7 @@ import { ETH_KEY } from '../../config/configs';
 import axios from 'axios';
 import { Helper } from '../../helpers/helper';
 import { WalletDatabaseService } from "../database/wallet.db.service"
-import ErrorInterceptor from '../../exceptions/apiError';
+import ErrorInterceptor from '../../exceptions/Error.exception';
 
 
 export class EthereumService extends Wallet{

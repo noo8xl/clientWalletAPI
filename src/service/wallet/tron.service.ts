@@ -5,7 +5,7 @@ import {Wallet} from "./wallet.service";
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet.types";
 import { Helper } from '../../helpers/helper';
 import { WalletDatabaseService } from "../database/wallet.db.service"
-import ErrorInterceptor from '../../exceptions/apiError';
+import ErrorInterceptor from '../../exceptions/Error.exception';
 
 export class TronService extends Wallet {
   coinName: string

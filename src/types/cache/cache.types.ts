@@ -20,8 +20,5 @@
 
 export type CACHE_DTO = {
   userId: string
-  apiKey: string
-  sessionExpired?: number
-  address?: string 
-
+  isApprove: boolean 
 }

@@ -5,7 +5,7 @@ import { TelegramNotificationApi } from '../../api/notification.api';
 import { MYSQL_DB } from '../../config/configs';
 import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from '../../types/database/db.response.types';
 import { WALLET } from '../../types/wallet/wallet.types';
-import ErrorInterceptor from '../../exceptions/apiError';
+import ErrorInterceptor from '../../exceptions/Error.exception';
 
 
 export class WalletDatabaseService {

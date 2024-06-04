@@ -1,6 +1,6 @@
 
 import { RATE_DATA, WALLET } from "../../types/wallet/wallet.types"
-import ErrorInterceptor from "../../exceptions/apiError"
+import ErrorInterceptor from "../../exceptions/Error.exception"
 
 export abstract class Wallet {
   coinName: string

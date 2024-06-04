@@ -1,10 +1,7 @@
 import { Helper } from "../../helpers/helper";
 import { CUSTOMER_ACTION, GET_ACTIONS_LIST } from "../../types/customer/customer.types";
-import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from "../../types/database/db.response.types";
 import { CustomerDatabaseService } from "../database/customer.db.service";
 import { CacheService } from "../cache/cache.service";
-import ErrorInterceptor from "src/exceptions/apiError";
-
 
 class CustomerService {
   private readonly stamp: number = new Date().getTime()
@@ -45,7 +42,7 @@ class CustomerService {
   // getActionsData -> get customer actions data history
   public async getActionsData(userDto: GET_ACTIONS_LIST): Promise<CUSTOMER_ACTION[] | boolean> {
     await this.helper.validateObject(userDto)
-    let result: DB_SELECT_RESPONSE = await this.customerDb.getActionHistory(userDto)
+    const result: CUSTOMER_ACTION[] | boolean = await this.customerDb.getActionHistory(userDto)
     return result
   }
 

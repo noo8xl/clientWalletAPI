@@ -1,11 +1,12 @@
 import express from 'express'
 import compression from 'compression'
-import router from './src/routes/index'
 import bodyParser from 'body-parser'
 import path from 'path'
 import http from 'node:http';
-import { port } from './src/config/configs'
-import { host } from "./src/config/configs"
+import router from './src/routes/index'
+import { coinList, port, host } from './src/config/configs'
+import { TelegramNotificationApi } from './src/api/notification.api'
+import { ParserService } from './src/service/parser/parser.service'
 
 const app = express()
 app.use('/static/', express.static(path.join(__dirname, + './' + 'static/')))
@@ -22,13 +23,39 @@ app.use((_req: express.Request, res: express.Response,  next: express.NextFuncti
 app.use(compression())
 app.disable('x-powered-by')
 
-
 // routers
 app.use('/wallet-api', router)
 
-const server = http.createServer(app)
-server.listen(port, () => console.error(`Server is running on http://${host}:${port}/`))
-server.on("error", async () => {
+// start balance parser & notification 
+const bootstrap = async (): Promise<void> => {
+  let walletArr = []
+  const notificationBot = new TelegramNotificationApi()
+  await notificationBot.messageInterceptor()
 
-})
+  for (let i = 0; i <= coinList.length -1; i++) {
+    let wt = new ParserService(coinList[i])
+    walletArr.push(wt)
+  }
+  console.log('wt array len -> ', walletArr.length);
+
+  for (let x = 0; x <= walletArr.length -1; x++)
+    await walletArr[x].setTime()
+
+  for (let x = 0; x <= walletArr.length -1; x++)
+    await walletArr[x].getWalletListByParams()
+
+  for (let x = 0; x <= walletArr.length -1; x++)
+    await walletArr[x].getWalletBalances()
+
+  for (let x = 0; x <= walletArr.length -1; x++)
+    await walletArr[x].getCoinsFromWallet()
+  
+
+  
+  console.log(`Server is running on http://${host}:${port}/`)
+}
+
+const server = http.createServer(app)
+server.listen(port, async (): Promise<void> => await bootstrap())
+server.on("error", async () => console.error("server error"))
 

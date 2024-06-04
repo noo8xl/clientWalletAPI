@@ -6,7 +6,7 @@ import { CACHE_DTO } from "../../types/cache/cache.types"
 import { DB_SELECT_RESPONSE } from "../../types/database/db.response.types"
 import { AUTH_CLIENT_DTO } from "../../types/auth/client.dto.type"
 import { CUSTOMER } from "../../types/customer/customer.types"
-import ErrorInterceptor  from "../../exceptions/apiError"
+import ErrorInterceptor  from "../../exceptions/Error.exception"
 
 // AuthService -> handle new customer registration and validate api key with middleware at each request
 class AuthService {
