@@ -49,6 +49,7 @@ export const MYSQL_DB = {
 
 export const ERROR_BOT_TOKEN: string | undefined = process.env.ERROR_BOT_TOKEN
 export const NOTIFICATION_BOT_TOKEN: string | undefined = process.env.NOTIFICATION_BOT_TOKEN;
+export const NOTIDICATION_AND_2FA_BOT_LINK: string | undefined = process.env.TELEGRAM_2FA_CODE_SENDER_LINK
 export const ERR_CHAT_ID: string | undefined = process.env.ERROR_TELEGRAM_CHAT_ID;
 
 

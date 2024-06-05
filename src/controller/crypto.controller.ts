@@ -1,10 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import cryptoService from "../service/crypto/crypto.service";
-import { CacheService } from '../service/cache/cache.service';
 import { WALLET_REQUEST_DTO } from '../types/wallet/wallet.types';
-
 import ErrorInterceptor  from "../exceptions/Error.exception";
-import { TelegramNotificationApi } from 'src/api/notification.api';
 
 // CryptoController -> handle user request 
 class CryptoController {

@@ -65,8 +65,7 @@ class CryptoService {
   private async setWalletInstance(payload: WALLET_REQUEST_DTO): Promise<void> {
     switch (payload.coinName) {
       case coinList[0]:
-        console.log(`list[0] = ${coinList[0]} coinName: ${payload.coinName}`);
-        
+        // console.log(`list[0] = ${coinList[0]} coinName: ${payload.coinName}`);
         this.wt = new BitcoinService(payload)
         break;
       case coinList[1]:
@@ -83,6 +82,7 @@ class CryptoService {
         break;
       default:
         this.status = false
+        break;
     }
   }
 }

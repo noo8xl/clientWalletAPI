@@ -20,6 +20,9 @@
 ------------------------------------------------------------------------------------
 
 
+ -> save wallet logic (decompose to different tables)
+ -> get wallet logic (join tables to get wallet)
+
  -> implement multithreading for the balance parser *
 
  ??? 

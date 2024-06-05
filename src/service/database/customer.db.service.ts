@@ -9,7 +9,6 @@ import CustomerModel from "../../models/Customer.model";
 import mongoose from "mongoose";
 
 
-
 export class CustomerDatabaseService {
   private readonly stamp: number = new Date().getTime()
   private readonly actionsModel = ActionModel

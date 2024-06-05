@@ -28,29 +28,20 @@ app.use('/wallet-api', router)
 
 // start balance parser & notification 
 const bootstrap = async (): Promise<void> => {
-  let walletArr = []
+  // let walletArr = []
   const notificationBot = new TelegramNotificationApi()
   await notificationBot.messageInterceptor()
 
-  for (let i = 0; i <= coinList.length -1; i++) {
-    let wt = new ParserService(coinList[i])
-    walletArr.push(wt)
-  }
-  console.log('wt array len -> ', walletArr.length);
-
-  for (let x = 0; x <= walletArr.length -1; x++)
-    await walletArr[x].setTime()
-
-  for (let x = 0; x <= walletArr.length -1; x++)
-    await walletArr[x].getWalletListByParams()
-
-  for (let x = 0; x <= walletArr.length -1; x++)
-    await walletArr[x].getWalletBalances()
-
-  for (let x = 0; x <= walletArr.length -1; x++)
-    await walletArr[x].getCoinsFromWallet()
+  // for (let i = 0; i <= coinList.length -1; i++) {
+  //   let wt = new ParserService(coinList[i])
+  //   wt.setParams()
+  //   wt.getWalletListByParams()
+  //   wt.getWalletBalances()
+  //   walletArr.push(wt)
+  // }
+  // console.log('wt array len -> ', walletArr.length);
+  // console.log("wt arr items -> ", walletArr);
   
-
   
   console.log(`Server is running on http://${host}:${port}/`)
 }

@@ -1,6 +1,4 @@
 import { availableCoins } from "../config/configs";
-import ErrorInterceptor  from "../exceptions/Error.exception";
-
 
 export class Helper {
 

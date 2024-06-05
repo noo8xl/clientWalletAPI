@@ -9,7 +9,6 @@
 // type CUSTOMER_CACHE = {
 //   userId: string
 //   apiKey: string
-//   sessionExpired: number
 // }
 
 

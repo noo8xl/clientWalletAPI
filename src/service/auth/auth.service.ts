@@ -44,8 +44,8 @@ class AuthService {
   }
 
   // signInClient ->  validate user session use cache and api key 
-  public async signInClient(clientDto: AUTH_CLIENT_DTO): Promise<void> { 
-    await this.customerDb.findUserByFilter(clientDto)
+  public async signInClient(clientDto: AUTH_CLIENT_DTO): Promise<boolean> { 
+    return await this.customerDb.findUserByFilter(clientDto)
     // let c: CACHE_DTO = await this.cacheService.getCachedData(clientDto.apiKey)
     // if(!c) return await this.customerDb.findUserByFilter(clientDto)
     // return null
