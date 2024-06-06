@@ -62,6 +62,17 @@ type SOLANA_WALLET = {
 }
 
 // type COIN_NAME_LIST = "btc" | "etc" | "trx" | "ton" | "sol"
+export type WALLET_LIST = {
+  id: number
+  coinName: string
+  address: string
+  balance: number
+  userId: string
+  publicKey: string
+  privateKey: string
+  isUsed: boolean
+  isChecked: boolean
+}
 
 export type WALLET = BITCOIN_WALLET | ETHEREUM_WALLET | THEOPENNETWORK_WALLET | TRON_WALLET | SOLANA_WALLET ;
 export type WALLET_TYPE = BitcoinService  | TronService | TheOpenNetworkService | EthereumService | SolanaService ;

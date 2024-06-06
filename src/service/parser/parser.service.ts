@@ -2,7 +2,7 @@ import { WalletDatabaseService } from "../database/wallet.db.service"
 import ErrorInterceptor from "../../exceptions/Error.exception"
 import cryptoService from "../crypto/crypto.service"
 
-import { WALLET } from "../../types/wallet/wallet.types"
+import { WALLET_LIST } from "../../types/wallet/wallet.types"
 
 // https://www.geeksforgeeks.org/how-to-handle-child-threads-in-node-js/
 
@@ -17,7 +17,7 @@ export class ParserService {
   private coinName: string
   private stamp: number
   private fromStamp: number
-  private wtList: WALLET[] // -> should be updated (type of wtList)
+  private wtList: WALLET_LIST[] 
   private balances: wtBalanceStruct[]
   private databaseService: WalletDatabaseService
 
@@ -47,18 +47,18 @@ export class ParserService {
   // getWalletBalances -> get balances, update wallet statuses and push balances in <this.balances> array
   async getWalletBalances(): Promise<void> {
     balanceSeeker: for (let i = 0; i <= this.wtList.length -1; i++) {
-      let balance: number = await cryptoService.getBalance({coinName: this.coinName, address: this.wtList[i].address})
+      let balance: number = await cryptoService.getBalance({coinName: this.wtList[i].coinName, address: this.wtList[i].address})
       if(balance < 0) 
         throw await ErrorInterceptor.ServerError(`
           getWalletBalances was failed. The wallet is: 
           coinName: ${this.coinName}, 
           address: ${this.wtList[i].address}`
         )
-      if(balance = 0) await this.databaseService.updateWalletStatus(this.wtList[i].address, false, true)
+      if(balance = 0) await this.databaseService.updateWalletStatus(this.wtList[i].id, false, true)
       if(balance > 0) {
-        this.balances.push({coinName: this.coinName, address: this.wtList[i].address, balance: balance})
-        // await this.databaseService.updateWalletStatus(this.) // -> update balance data in tables & update updatedAt
-        await this.databaseService.updateWalletStatus(this.wtList[i].address, true, true)
+        this.balances.push({coinName: this.wtList[i].coinName, address: this.wtList[i].address, balance: balance})
+        await this.databaseService.updateWalletBalance(this.wtList[i].id, this.wtList[i].balance)
+        await this.databaseService.updateWalletStatus(this.wtList[i].id, true, true)
       }
       continue balanceSeeker;
     }
