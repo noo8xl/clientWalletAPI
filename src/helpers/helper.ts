@@ -2,10 +2,10 @@ import { availableCoins } from "../config/configs";
 
 export class Helper {
 
-  //getDomainNameFromOrigin -> get domain name
-  async getOriginName(origin: string): Promise<string> {
-    return origin.split('//')[1]
-  }
+  // //getDomainNameFromOrigin -> get domain name
+  // async getOriginName(origin: string): Promise<string> {
+  //   return origin.split('//')[1]
+  // }
 
 
   // validateObject -> validate if object keu has an undefined value 

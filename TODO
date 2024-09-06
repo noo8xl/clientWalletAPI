@@ -24,6 +24,7 @@
  -> get wallet logic (join tables to get wallet)
 
  -> implement multithreading for the balance parser *
+ -> interact with parser via telegram
 
  ??? 
  -> implement exchange service

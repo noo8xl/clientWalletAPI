@@ -82,7 +82,7 @@ export class BitcoinService extends Wallet {
     this.status = await this.helper.validateObject(wt)
     console.log(`this status: ${this.status}`);
     
-    // this.status = await this.dbService.saveUserWallet(wt);
+    this.status = await this.dbService.saveUserWallet(wt);
 
     if (!this.status) return false
     return wt.address

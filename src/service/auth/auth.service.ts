@@ -40,7 +40,7 @@ class AuthService {
       updatedAt: this.stamp
     }
     
-    await this.customerDb.saveNewClient(userDto)
+    return await this.customerDb.saveNewClient(userDto)
   }
 
   // signInClient ->  validate user session use cache and api key 

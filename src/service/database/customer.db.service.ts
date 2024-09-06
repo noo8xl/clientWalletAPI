@@ -57,12 +57,8 @@ export class CustomerDatabaseService {
       const result = await this.customerModel.create(userDto)
       actionLog.userId = result._id.toString()
 
-      // const cache: CACHE_DTO = { 
-      //   key: result._id.toString(), //  -> using as key
-      //   value: userDto.apiKey, // using as value 
-      // }
+      // set cache data here <- 
 
-      // this.status =  await this.cacheService.setSessionData(cache)
       await this.saveUserLogsData(actionLog)
     } catch (e) {
       console.log("cached error \n-> ", e);
