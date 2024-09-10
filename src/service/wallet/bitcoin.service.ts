@@ -78,8 +78,17 @@ export class BitcoinService extends WalletHelper implements Wallet {
     //   - btc obj: ${wt},
     // `);
 
+<<<<<<< HEAD
     this.status = await this.dbService.saveUserWallet(wt);
     if (!this.status) throw await ErrorInterceptor.ExpectationFailed("method caught an error.")
+=======
+    this.status = await this.helper.validateObject(wt)
+    console.log(`this status: ${this.status}`);
+    
+    this.status = await this.dbService.saveUserWallet(wt);
+
+    if (!this.status) return false
+>>>>>>> origin/main
     return wt.address
   }
 

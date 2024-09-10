@@ -11,8 +11,6 @@ import { ParserService } from './src/service/parser/parser.service'
 const app = express()
 app.use('/static/', express.static(path.join(__dirname, + './' + 'static/')))
 
-// add parser function with timeout <<<============
-
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json({ type: 'application/*+json' }))

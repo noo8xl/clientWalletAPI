@@ -29,6 +29,7 @@ class AuthService {
 
     // generate an API key for user 
     const API_KEY: string = await this.helper.generatePassword(64)
+<<<<<<< HEAD
     let customer: Customer = new Customer()
 		let details: CustomerDetails = new CustomerDetails()
 
@@ -37,6 +38,22 @@ class AuthService {
 		customer.setCustomerDetails(details)
 
     await this.customerDb.saveNewClient(customer)
+=======
+    const userDto: CUSTOMER = {
+      // userId: 
+      userEmail: clientDto.userEmail,
+      domainName: clientDto.domainName,
+      companyName: clientDto.companyName,
+      apiKey: API_KEY,
+      fiatName: "USD",
+      telegramId: clientDto.telegramId,
+      isActive: true,
+      createdAt: this.stamp,
+      updatedAt: this.stamp
+    }
+    
+    return await this.customerDb.saveNewClient(userDto)
+>>>>>>> origin/main
   }
 
   // signInClient ->  validate user session use cache and api key 
