@@ -1,0 +1,8 @@
+
+
+
+ -- factory design pattern implemented in the wallet area
+
+ -- implemented SOLID principles
+
+ -- using

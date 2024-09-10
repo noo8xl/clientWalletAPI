@@ -48,7 +48,7 @@ export class CustomerDatabaseService {
       userId: "",
       date: this.stamp,
       status: "success",
-      action: "Customer has been successfully registred."
+      action: "Customer has been successfully registered."
     }
 
     try {

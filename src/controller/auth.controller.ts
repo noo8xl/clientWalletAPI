@@ -6,15 +6,15 @@ import ErrorInterceptor  from "../exceptions/Error.exception";
 
 class AuthController {
 
-  async signUpNewClient(req: Request, res: Response, next: NextFunction): Promise<void> {
+	async signUpNewClient(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = await authService.signUpNewClient(req.body)
-      if (!result) throw await ErrorInterceptor.BadRequest("User already exists.")
-      res.status(201).json({message: "client successfully created"}).end()
+      await authService.signUpNewClient(req.body)
     } catch (e) {
       next(e)
     }
-  }
+		res.status(201).json({message: "client successfully created"}).end()
+	}
+
 
 }
 

@@ -4,18 +4,20 @@ import { SOL_KEY } from "../../config/configs"
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "src/types/wallet/wallet.types"
 import crypto from "crypto"
 import Web3 from '@solana/web3.js'
-import { Wallet } from './wallet.service'
-import axios from 'axios'
-import { Helper } from '../../helpers/helper'
+import { Wallet } from './walletInterface'
+
 import { WalletDatabaseService } from "../database/wallet.db.service"
+import ErrorInterceptor from "../../exceptions/Error.exception";
+import {WalletHelper} from "./walletHelper";
 
 
-export class SolanaService extends Wallet {
-  coinName: string
+export class SolanaService extends WalletHelper implements Wallet{
+
+  readonly coinName: string
   private readonly API_KEY = SOL_KEY
-  private userId: string
-  private address: string
-  private helper: Helper
+  private readonly userId: string
+  private readonly address: string
+
   private dbService: WalletDatabaseService
   private status: boolean = true
 
@@ -24,13 +26,11 @@ export class SolanaService extends Wallet {
     this.userId = dto.userId
     this.coinName = dto.coinName
     this.address = dto.address
-    this.helper = new Helper()
     this.dbService = new WalletDatabaseService()
   }
 
 
-
-  async createWallet(): Promise<boolean | string> {
+	public async createWallet(): Promise<string> {
     // https://docs.solana.com/developing/clients/javascript-reference
     let account = Web3.Keypair.generate();
 
@@ -53,20 +53,19 @@ export class SolanaService extends Wallet {
 
     const wt: WALLET = {
       userId: this.userId,
-      coinName: "Solana",
+      coinName: "solana",
       address: programAddressFromKey.toString(),
       privateKey: accountFromSecret.secretKey.toString(),
       publicKey: accountFromSecret.publicKey.toString(),
       balance: 0,
     }
 
-    this.status = await this.helper.validateObject(wt)
     this.status = await this.dbService.saveUserWallet(wt);
-    if (!this.status) return false
-    return wt.address
+		if (!this.status) throw await ErrorInterceptor.ExpectationFailed("method caught an error.")
+		return wt.address
   }
 
-  async getBalance(): Promise<number> {
+	public async getBalance(): Promise<number> {
     const apiUrl: string = `https://solana-mainnet.g.alchemy.com/v2/${this.API_KEY}/`
     const connection = new solanaWeb3.Connection(apiUrl, 'confirmed')
   
@@ -78,12 +77,12 @@ export class SolanaService extends Wallet {
     return Number(curBalance)
   }
 
-  async getWallet(): Promise<WALLET> {
+	public async getWallet(): Promise<WALLET> {
     let wt: WALLET;
     return wt;
   }
 
-  async sendTransaction(): Promise<string> {
+	public async sendTransaction(): Promise<string> {
     let cryptoValToFiat: number
     // const rate: RATE_DATA | boolean = await this.getRate()
 
@@ -110,32 +109,16 @@ export class SolanaService extends Wallet {
     
   }
 
-  async getTransactionInfo(): Promise<any> {
+	public async getTransactionInfo(): Promise<any> {
     
     return ""
   }
 
-  async getRate(): Promise<RATE_DATA | boolean> {
-    const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
-    const fiatName: string = "" // await db get user details (fiat name )
+	public async getRate(): Promise<RATE_DATA> {
+		const fiatName: string = "" // get from db by user data
+		const balance: number = await this.getBalance()
 
-    const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`
-    const balance: number = await this.getBalance()
-    if(balance < 0) return false
+		return await super.getRate(fiatName, balance)
+	}
 
-    const d = await axios(getRateUrl)
-    .then((res) => { return res.data })
-    .catch((e) => {if (e) { this.status = false }})
-
-    const rateData: RATE_DATA = {
-      coinName: this.coinName,
-      fiatName: fiatName, 
-      coinBalance: balance,
-      fiatValue: d[coinNameForUrl][fiatName]
-    }
-
-    console.log("rate obj is -> ", rateData);
-    if (!this.status) return false
-    return rateData
-  }
 }

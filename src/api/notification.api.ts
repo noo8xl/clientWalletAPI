@@ -10,7 +10,7 @@ import TelegramBot from 'node-telegram-bot-api'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios"
 import { CustomerDatabaseService } from '../service/database/customer.db.service'
 import { CacheService } from '../service/cache/cache.service'
-import { CUSTOMER } from "src/types/customer/customer.types"
+import {Customer} from "../entity/customer/Customer";
 
 export class TelegramNotificationApi {
   private readonly notifToken = NOTIFICATION_BOT_TOKEN
@@ -18,7 +18,7 @@ export class TelegramNotificationApi {
 	private readonly devId = ERR_CHAT_ID
 
 
-	// messageInterceptor -> intercept user message with start bot, get tg id, 2fa to approve transactions
+	// messageInterceptor -> intercept a user message with start bot, get tg id, 2fa to approve transactions
 	public async messageInterceptor(): Promise<void> {
 		const bot = new TelegramBot(this.notifToken, { polling: true })
 		const db = new CustomerDatabaseService()
@@ -30,7 +30,7 @@ export class TelegramNotificationApi {
 		bot.on("message", async (msg) => {
 			if(msg.text !== "/start" && msg.text !== "/id") {
 				let chatId: number = msg.chat.id
-				let customer: CUSTOMER = await db.findUserByFilter({telegramId: chatId})
+				let customer: Customer = await db.findUserByFilter({telegramId: chatId})
 				if (!customer) {
 					await bot.sendMessage(chatId, `You are unknown person.`)
 					return

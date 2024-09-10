@@ -1,19 +1,19 @@
-// import TonWeb from "tonweb";
-import axios from "axios";
+
 import { WalletContractV4, TonClient, Address } from "@ton/ton";
 import { mnemonicNew , KeyPair, mnemonicToWalletKey } from "ton-crypto";
-import {Wallet} from "./wallet.service";
+import {Wallet} from "./walletInterface";
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet.types";
-import { Helper } from "../../helpers/helper";
 import { WalletDatabaseService } from "../database/wallet.db.service"
 import ErrorInterceptor from '../../exceptions/Error.exception';
+import {WalletHelper} from "./walletHelper";
 
 
-export class TheOpenNetworkService extends Wallet {
-  coinName: string
-  private userId: string
-  private address: string
-  private helper: Helper
+export class TheOpenNetworkService extends WalletHelper implements Wallet {
+
+  readonly coinName: string
+  private readonly userId: string
+  private readonly address: string
+
   private client: TonClient
   private dbService: WalletDatabaseService
   private status: boolean = true
@@ -23,14 +23,14 @@ export class TheOpenNetworkService extends Wallet {
     this.userId = dto.userId
     this.coinName = dto.coinName
     this.address = dto.address
-    this.helper = new Helper()
     this.dbService = new WalletDatabaseService()
+
     this.client = new TonClient({endpoint: "testnet"})
     // this.client = new TonClient({endpoint: "mainnet"})
   }
 
 
-  async createWallet(): Promise<boolean | string> {
+  public async createWallet(): Promise<string> {
     // https://ton-community.github.io/tutorials/01-wallet/ 
     const mnemonics: string[] = await mnemonicNew();
     const keyPair: KeyPair = await mnemonicToWalletKey(mnemonics);
@@ -41,31 +41,30 @@ export class TheOpenNetworkService extends Wallet {
     
     const wt: WALLET = {
       userId: this.userId,
-      coinName: "TheOpenNetwork",
+      coinName: "theOpenNetwork",
       address: wallet.address.toString(),
       privateKey: keyPair.secretKey.toString(),
       publicKey: keyPair.publicKey.toString(),
       balance: 0,
     }
 
-    this.status = await this.helper.validateObject(wt)
     this.status = await this.dbService.saveUserWallet(wt);
-    if (!this.status) return false
+		if (!this.status) throw await ErrorInterceptor.ExpectationFailed("method caught an error.")
     return wt.address
   }
 
-  async getBalance(): Promise<number> {
+  public async getBalance(): Promise<number> {
     const balance: bigint = await this.client.getBalance(Address.parse(this.address))
     console.log('balance => ', balance);    
     return Number(balance)
   }
 
-  async getWallet(): Promise<WALLET> {
+  public async getWallet(): Promise<WALLET> {
     let wt: WALLET;
     return wt;
   }
 
-  async sendTransaction(): Promise<string> {
+  public async sendTransaction(): Promise<string> {
     let cryptoValToFiat: number
     // const rate: RATE_DATA = await this.getRate()
     // const cryptoValToFiat: number = rate.fiatValue * rate.coinBalance
@@ -110,26 +109,11 @@ export class TheOpenNetworkService extends Wallet {
     return ""
   }
 
-  async getRate(): Promise<RATE_DATA | boolean> {
-    const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
-    const fiatName: string = "" // await db get user details (fiat name )
+	public async getRate(): Promise<RATE_DATA> {
+		const fiatName: string = "" // get from db by user data
+		const balance: number = await this.getBalance()
 
-    const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`
-    const balance: number = await this.getBalance()
+		return await super.getRate(fiatName, balance)
+	}
 
-    const d = await axios(getRateUrl)
-    .then((res) => { return res.data })
-    .catch((e) => {if (e) { this.status = false }})
-
-    const rateData: RATE_DATA = {
-      coinName: this.coinName,
-      fiatName: fiatName, 
-      coinBalance: balance,
-      fiatValue: d[coinNameForUrl][fiatName]
-    }
-
-    console.log("rate obj is -> ", rateData);
-    if (!this.status) return false
-    return rateData
-  }
 }

@@ -1,34 +1,33 @@
 import * as ethWallet from 'ethereumjs-wallet'
 import Web3 from 'web3'
-import {Wallet} from "./wallet.service";
+import {Wallet} from "./walletInterface";
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet.types";
 import { ETH_KEY } from '../../config/configs';
-import axios from 'axios';
-import { Helper } from '../../helpers/helper';
 import { WalletDatabaseService } from "../database/wallet.db.service"
 import ErrorInterceptor from '../../exceptions/Error.exception';
+import {WalletHelper} from "./walletHelper";
 
 
-export class EthereumService extends Wallet{
-  coinName: string
-  private readonly API_KEY: string = ETH_KEY
-  private userId: string
-  private address: string
-  private helper: Helper 
-  private dbService: WalletDatabaseService
+export class EthereumService extends WalletHelper implements Wallet {
+
+	readonly coinName: string
+	private readonly API_KEY: string = ETH_KEY
+  private readonly userId: string
+  private readonly address: string
+
+  private readonly dbService: WalletDatabaseService
   private status: boolean = true
 
   constructor(dto: WALLET_REQUEST_DTO) {
-    super(dto.coinName)
+		super(dto.coinName)
     this.userId = dto.userId
     this.coinName = dto.coinName
     this.address = dto.address
-    this.helper = new Helper()
-    this.dbService = new WalletDatabaseService()
+		this.dbService = new WalletDatabaseService()
   }
 
 
-  async createWallet(): Promise<boolean | string> {
+  public async createWallet(): Promise<string> {
     // https://levelup.gitconnected.com/generate-ethereum-address-using-node-js-a6a73f42a4cf
     const ethWt = ethWallet.default.generate();
 
@@ -41,20 +40,19 @@ export class EthereumService extends Wallet{
 
     const wt: WALLET = {
       userId: this.userId,
-      coinName: "Ethereum",
+      coinName: "ethereum",
       address: ethWt.getAddressString(),
       privateKey:ethWt.getPrivateKeyString(),
       publicKey: ethWt.getPublicKeyString(),
       balance: 0,
     }
 
-    this.status = await this.helper.validateObject(wt)
-    this.status = await this.dbService.saveUserWallet(wt);
-    if (!this.status) return false
-    return wt.address
+		this.status = await this.dbService.saveUserWallet(wt);
+		if (!this.status) throw await ErrorInterceptor.ExpectationFailed("Wallet saving was failed.")
+		return wt.address
   }
 
-  async getBalance(): Promise<number> {
+  public async getBalance(): Promise<number> {
     const web3 = new Web3(new Web3.providers.HttpProvider(`https://mainnet.infura.io/v3/${this.API_KEY}`))
     const curAddress = web3.utils.toChecksumAddress(this.address)
     console.log('curAddress => ', curAddress);
@@ -63,12 +61,12 @@ export class EthereumService extends Wallet{
     return Number(tokenBalance)
   }
 
-  async getWallet(): Promise<WALLET> {
+  public async getWallet(): Promise<WALLET> {
     let wt: WALLET;
     return wt;
   }
 
-  async sendTransaction(): Promise<string> {
+  public async sendTransaction(): Promise<string> {
     let cryptoValToFiat: number
     // const rate: RATE_DATA = await this.getRate()
   
@@ -93,34 +91,15 @@ export class EthereumService extends Wallet{
     }
   }
 
-  async getTransactionInfo(): Promise<any> {
+  public async getTransactionInfo(): Promise<any> {
     return ""
   }
 
+	public async getRate(): Promise<RATE_DATA> {
+		const fiatName: string = "" // get from db by user data
+		const balance: number = await this.getBalance()
 
-  async getRate(): Promise<RATE_DATA | boolean> {
-    let rateData: RATE_DATA;
-    const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
-    const fiatName: string = "" // await db get user details (fiat name )
-
-    const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`
-    const balance: number = await this.getBalance()
-    if (balance < 0) return false
-
-    const d = await axios(getRateUrl)
-    .then((res) => { return res.data })
-    .catch((e) => {if (e) { this.status = false }})
-
-    rateData = {
-      coinName: this.coinName,
-      fiatName: fiatName, 
-      coinBalance: balance,
-      fiatValue: d[coinNameForUrl][fiatName]
-    }
-
-    console.log("rate obj is -> ", rateData);
-    if (!this.status) return false
-    return rateData
-  }
+		return await super.getRate(fiatName, balance)
+	}
 
 }

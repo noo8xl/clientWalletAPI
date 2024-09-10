@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import customerService from "../service/customer/customer.service";
-import { CUSTOMER_ACTION, GET_ACTIONS_LIST } from "../types/customer/customer.types";
+import { GET_ACTIONS_LIST } from "../types/customer/customer.types";
 import ErrorInterceptor  from "../exceptions/Error.exception";
+import {ActionLog} from "../entity/action/ActionLog";
 
-class CustomerComtroller {
+class CustomerController {
 
   public async changeFiatCurrencyDisplay(req: Request, res: Response, next: NextFunction): Promise<void>{
     let dto = { userId: req.params.userId, fiatName: req.params.fiatName }
@@ -25,8 +26,8 @@ class CustomerComtroller {
     }
 
     try {
-      const result: CUSTOMER_ACTION[] | boolean = await customerService.getActionsData(dto)
-      if (!result) throw await ErrorInterceptor.ServerError("get Action list")
+      const result: ActionLog[] | boolean = await customerService.getActionsData(dto)
+      // if (!result) throw await ErrorInterceptor.ServerError("get Action list")
       res.status(200).json(result).end()
     } catch (e) {
       next(e)
@@ -46,4 +47,4 @@ class CustomerComtroller {
 
 }
 
-export default new CustomerComtroller()
+export default new CustomerController()

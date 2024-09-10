@@ -1,34 +1,34 @@
+
+
 const TronWeb = require('tonweb')
 import axios, { AxiosRequestHeaders } from 'axios';
 import { TRON_API_KEY } from "../../config/configs";
-import {Wallet} from "./wallet.service";
+import {Wallet} from "./walletInterface";
 import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet.types";
-import { Helper } from '../../helpers/helper';
 import { WalletDatabaseService } from "../database/wallet.db.service"
 import ErrorInterceptor from '../../exceptions/Error.exception';
+import {WalletHelper} from "./walletHelper";
 
-export class TronService extends Wallet {
-  coinName: string
+export class TronService extends WalletHelper implements Wallet{
+
+	readonly coinName: string
   private readonly tronApiKey = TRON_API_KEY
-  private userId: string
-  private address: string
-  private helper: Helper
+  private readonly userId: string
+  private readonly address: string
+
   private dbService: WalletDatabaseService
   private status: boolean = true
-
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
     this.userId = dto.userId
     this.coinName = dto.coinName
     this.address = dto.address
-    this.helper = new Helper()
-    this.dbService = new WalletDatabaseService()
+		this.dbService = new WalletDatabaseService()
   }
 
-  async createWallet(): Promise<boolean | string> {
+  public async createWallet(): Promise<string> {
     // https://www.npmjs.com/package/tronweb
-    let result: ErrorInterceptor | string;
     const tronWeb = new TronWeb({
       fullHost: 'https://api.trongrid.io/',
       headers: { "TRON-PRO-API-KEY": this.tronApiKey }
@@ -36,30 +36,28 @@ export class TronService extends Wallet {
 
     const trxAccount = await tronWeb.createAccount()
 
-    console.log(`
-      Generated wallet: 
-      - address : ${trxAccount.address.base58},
-      - privKey : ${trxAccount.privateKey},
-      - pubKey : ${trxAccount.publicKey}
-   `);
+   //  console.log(`
+   //    Generated wallet:
+   //    - address : ${trxAccount.address.base58},
+   //    - privKey : ${trxAccount.privateKey},
+   //    - pubKey : ${trxAccount.publicKey}
+   // `);
 
     const wt: WALLET = {
       userId: this.userId,
-      coinName: "Tron",
+      coinName: "tron",
       address: trxAccount.address.base58.toString(),
       privateKey: trxAccount.privateKey,
       publicKey: trxAccount.publicKey,
       balance: 0,
     }
 
-
-    this.status = await this.helper.validateObject(wt)
     this.status = await this.dbService.saveUserWallet(wt);
-    if (!this.status) return false
+		if (!this.status) throw await ErrorInterceptor.ExpectationFailed("method caught an error.")
     return wt.address
   }
 
-  async getBalance(): Promise<number> {
+  public async getBalance(): Promise<number> {
     const reqUrl: string = `https://apilist.tronscan.org/api/account?address=${this.address}`
     const payload = { "address": this.address }
     let trxNetworkCoinBalance: number;
@@ -68,6 +66,10 @@ export class TronService extends Wallet {
       url: reqUrl,
       headers: payload
     })
+			.catch((e) => {if (e) { this.status = false }})
+
+		if (!this.status) throw await ErrorInterceptor.ExpectationFailed("Can't get a balance.")
+
     console.log('coinData => ', coinData);
     const dataArray: any = coinData.data.tokens
     console.log('received data  => ', coinData.data.tokens);
@@ -77,12 +79,12 @@ export class TronService extends Wallet {
     return Number(trxNetworkCoinBalance)
   }
 
-  async getWallet(): Promise<WALLET> {
+  public async getWallet(): Promise<WALLET> {
     let wt: WALLET;
     return wt;
   }
 
-  async sendTransaction(): Promise<string> {
+  public async sendTransaction(): Promise<string> {
     let cryptoValToFiat: number;
     // const rate: RATE_DATA = await this.getRate()
   
@@ -107,33 +109,16 @@ export class TronService extends Wallet {
     }
   }
 
-  async getTransactionInfo(): Promise<any> {
+  public async getTransactionInfo(): Promise<any> {
     return ""
   }
 
-  async getRate(): Promise<RATE_DATA | boolean> {
-    let rateData: RATE_DATA;
-    const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
-    const fiatName: string = "" // await db get user details (fiat name )
+	public async getRate(): Promise<RATE_DATA> {
+		const fiatName: string = "" // get from db by user data
+		const balance: number = await this.getBalance()
 
-    const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`
-    const balance: number = await this.getBalance()
-    if(balance < 0) return false
+		return await super.getRate(fiatName, balance)
+	}
 
-    const d = await axios(getRateUrl)
-    .then((res) => { return res.data })
-    .catch((e) => {if (e) { this.status = false }})
-
-    rateData = {
-      coinName: this.coinName,
-      fiatName: fiatName, 
-      coinBalance: balance,
-      fiatValue: d[coinNameForUrl][fiatName]
-    }
-
-    console.log("rate obj is -> ", rateData);
-    if (!this.status) return false
-    return rateData
-  }
 
 }

@@ -9,6 +9,7 @@ import ErrorInterceptor from '../../exceptions/Error.exception';
 
 
 export class WalletDatabaseService {
+
 	private db: mysql.Connection
   private readonly dbHost = MYSQL_DB.host
 	private readonly dbUser = MYSQL_DB.userName
@@ -20,7 +21,7 @@ export class WalletDatabaseService {
 
 	constructor() { 
 		this.notificator = new TelegramNotificationApi()
-		this.initConnection() 
+		// this.initConnection()
 	}
 
 
@@ -58,7 +59,7 @@ export class WalletDatabaseService {
 		
 		const stamp: number = new Date().getTime()
 
-		// searchWalletql -> filter to get saved wallet id 
+		// searchWalletsql -> filter to get saved wallet id
 		const searchWalletql: string = `
 			SELECT id, 
 			FROM WalletList
@@ -165,20 +166,32 @@ export class WalletDatabaseService {
 	}
 
 	async updateWalletBalance(walletId: number, balance: number): Promise<boolean> {
-
+		
 		const stamp: number = new Date().getTime()
-    const sqlBalance: string = `
-      UPDATE WalletList 
-      SET balance = ? 
-      WHERE walletId = ?
-    `;
-		const sqlParams: string = `
+
+		let sql: string = `
+			UPDATE WalletList
+			SET balance = ? 
+			FROM WalletList
+			JOIN WalletParams ON WalletList.id = WalletParams.walletId
 			UPDATE WalletParams
-			SET updatedAt = ? 
-			WHERE id = ?
+			SET WalletParams.updatedAt = ? 
+			WHERE WalletParams.walletId = ?
 		`;
-		await this.updateData(sqlBalance,[ balance, walletId ])
-		await this.updateData(sqlParams,[ stamp, walletId ])
+
+    // const sqlBalance: string = `
+    //   UPDATE WalletList 
+    //   SET balance = ? 
+    //   WHERE walletId = ?
+    // `;
+		// const sqlParams: string = `
+		// 	UPDATE WalletParams
+		// 	SET updatedAt = ? 
+		// 	WHERE id = ?
+		// `;
+		// await this.updateData(sqlBalance,[ balance, walletId ])
+
+		await this.updateData(sql,[ balance, stamp, walletId ])
 		await this.closeConnection()
 		return this.status
 	}

@@ -13,8 +13,7 @@ class CryptoController {
 		}
 
 		try {
-			const result: string | boolean = await cryptoService.generateOneTimeAddressByCoinName(dto)
-			if (!result) throw await ErrorInterceptor.BadRequest(`Can't send transaction in unknown ${dto.coinName} network or unavailable coin.`) 
+			const result: string = await cryptoService.generateOneTimeAddressByCoinName(dto)
 			res.status(201).json({coinName: dto.coinName, address: result}).end()
 		} catch (e) {
 			next(e)
@@ -31,7 +30,6 @@ class CryptoController {
 
 		try {
 			const result: number = await cryptoService.getBalance(dto)
-			if (result < 0) throw await ErrorInterceptor.ServerError("get balance")
 			res.status(200).json({coinName: dto.coinName, balance: result}).end()
 		} catch (e) {
 			next(e)
@@ -46,9 +44,9 @@ class CryptoController {
 		}
 
 		try {
-			const result: boolean | string = await cryptoService.sendManualTransaction(dto)
-			if(typeof result === null) throw await ErrorInterceptor.ExpectationFailed("You should approve this action.")
-			if (!result) throw await ErrorInterceptor.BadRequest(`Can't send transaction in unknown ${dto.coinName} network or unavailable coin.`) 
+			const result: string = await cryptoService.sendManualTransaction(dto)
+			// if(typeof result === null) throw await ErrorInterceptor.ExpectationFailed("You should approve this action.")
+			// if (!result) throw await ErrorInterceptor.BadRequest(`Can't send transaction in unknown ${dto.coinName} network or unavailable coin.`)
 			res.status(200).json({coinName: dto.coinName, transactionDetails: result}).end()
 		} catch (e) {
 			next(e)

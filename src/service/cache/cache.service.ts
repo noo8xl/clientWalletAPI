@@ -4,11 +4,7 @@ import { createClient } from "redis";
 export class CacheService {
   private rdb // -> should be typed
 
-  constructor() {
-
-    // this.initClient()
-    // this.connectClient()
-   }
+  constructor() {}
 
   // ############### -> setters area
 
@@ -20,6 +16,7 @@ export class CacheService {
 
   // setCachedData -> set date to cache store 
   public async setCachedData(dto: CACHE_DTO): Promise<void> {
+		await this.connectClient()
     await this.rdb.hSet(dto.userId, dto.isApprove)
     await this.rdb.disconnect()
   }
@@ -29,6 +26,7 @@ export class CacheService {
   // getCachedData -> could be used with customer <userId> as key 
   // or with <address> as key to get tsx cache data
   public async getCachedData(userId: string): Promise<boolean> {
+		await this.connectClient()
     let temp = await this.rdb.hGetAll(userId)
     const c  = JSON.parse(JSON.stringify(temp, null, 2))
     console.log("cache is -> ", c);
@@ -43,6 +41,7 @@ export class CacheService {
 
   // clearCachedDataByKey -> delete cached data by key
   public async clearCachedDataByKey(key: string): Promise<void> {
+		await this.connectClient()
     await this.rdb.del(key)
     await this.rdb.disconnect()
   }
@@ -55,6 +54,7 @@ export class CacheService {
 
   // connectClient -> connecting to the redis client 
   private async connectClient(): Promise<void> {
+		await this.initClient()
     await this.rdb.connect();
   }
 
@@ -63,9 +63,7 @@ export class CacheService {
     this.rdb = createClient()
       .on('error', async () => { 
         console.log("rdb error ");
-        
-        // return await this.errorHandler.ServerError("Cache DB connection") 
-      })
+			})
 
     // const client = createClient({
     //   username: 'default', // use your Redis user. More info https://redis.io/docs/management/security/acl/

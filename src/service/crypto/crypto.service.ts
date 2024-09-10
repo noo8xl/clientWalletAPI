@@ -10,6 +10,7 @@ import { CacheService } from "../cache/cache.service";
 import { TelegramNotificationApi } from "../../api/notification.api";
 import { CUSTOMER } from "src/types/customer/customer.types";
 import { CustomerDatabaseService } from "../database/customer.db.service";
+import ErrorInterceptor from "../../exceptions/Error.exception";
 
 // CryptoService -> CRUD interaction with different blockchains 
 class CryptoService {
@@ -25,35 +26,42 @@ class CryptoService {
     this.customerDb = new CustomerDatabaseService()
   }
 
-  // generateOneTimeAddressByCoinName -> generate address in chosen blockchain
-  public async generateOneTimeAddressByCoinName(payload: WALLET_REQUEST_DTO): Promise<boolean | string> {
+  // generateOneTimeAddressByCoinName -> generate address in the chosen blockchain
+  public async generateOneTimeAddressByCoinName(payload: WALLET_REQUEST_DTO): Promise<string> {
     await this.setWalletInstance(payload)
-    if (!this.status) return false
+
     return await this.wt.createWallet()
   }
 
-  // getBalance -> get wallet balance by address in chosen blockchain
+  // getBalance -> get wallet balance by address in the chosen blockchain
   public async getBalance(payload: WALLET_REQUEST_DTO): Promise<number> {
     await this.setWalletInstance(payload)
-    if (!this.status) return -1
+
     return await this.wt.getBalance()
   }
   
-  // sendManualTransaction -> send manual transaction with received data in chosen blockchain
-  public async sendManualTransaction(payload: WALLET_REQUEST_DTO): Promise<boolean | string> {
+  // sendManualTransaction -> send manual transaction with received data in the chosen blockchain
+  public async sendManualTransaction(payload: WALLET_REQUEST_DTO): Promise<string> {
     const c: boolean = await this.cacheService.getCachedData(payload.userId)
     if (!c) {
       const msg: string = `
-      You should aproove <send transaction> action.
-      To aproove tsx -> send "Y"
+      You should approve <send transaction> action.
+      To approve tsx -> send "Y"
       To reject tsx -> send "N"
       `;
       let customer: CUSTOMER = await this.customerDb.findUserByFilter({id: payload.userId})
       this.status = await this.notificator.sendInfoMessage(customer.telegramId, msg)
       return null
     }
+
+		try {
+
+		} catch (e: any) {
+			// throw await ErrorInterceptor.
+		}
+
+
     await this.setWalletInstance(payload)
-    if (!this.status) return false
     return await this.wt.sendTransaction()
   }
 
@@ -81,8 +89,7 @@ class CryptoService {
         this.wt = new SolanaService(payload)
         break;
       default:
-        this.status = false
-        break;
+        throw await ErrorInterceptor.ExpectationFailed("Received wrong coin name.")
     }
   }
 }

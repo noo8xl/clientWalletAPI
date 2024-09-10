@@ -9,7 +9,7 @@ const router = express.Router()
 
 // ################## auth area ##################
 
-// sign a new customer to have an access to the API
+// sign a new customer to have access to the API
 router.put(
 	'/auth/sign-up/',
 	authController.signUpNewClient)
@@ -38,7 +38,7 @@ router.patch(
 
 // ###################### wallet area ######################
 
-// generate single address by coinName for cur userId
+// generate a single address by coinName for cur userId
 router.get(
 	'/wallet/generate/:coinName/:userId/',
 	validateAccessKey,

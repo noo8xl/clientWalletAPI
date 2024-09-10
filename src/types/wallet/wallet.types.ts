@@ -1,3 +1,4 @@
+
 import { SolanaService } from "../../service/wallet/solana.service"
 import { BitcoinService } from "../../service/wallet/bitcoin.service"
 import { EthereumService } from "../../service/wallet/ethereum.service"
@@ -12,7 +13,7 @@ type BITCOIN_WALLET = {
   publicKey: string // Buffer ->  available str value with toString()
   seedPhrase?: string // Buffer ->  available str value with toString()
   mnemonic?: string
-  // isUsed: boolean // if wallet has ballance 
+  // isUsed: boolean // if wallet has balance
   // isChecked: boolean // if wallet was checked by balance parser 
   balance: number
 }
@@ -75,7 +76,8 @@ export type WALLET_LIST = {
 }
 
 export type WALLET = BITCOIN_WALLET | ETHEREUM_WALLET | THEOPENNETWORK_WALLET | TRON_WALLET | SOLANA_WALLET ;
-export type WALLET_TYPE = BitcoinService  | TronService | TheOpenNetworkService | EthereumService | SolanaService ;
+export type WALLET_TYPE = BitcoinService | TronService | TheOpenNetworkService | EthereumService | SolanaService ;
+
 export type RATE_DATA = {
   coinName: string
   fiatName: string

@@ -15,7 +15,7 @@ class CustomerService {
     this.customerDb = new CustomerDatabaseService()
   }
 
-  // revokeApiAccess -> revoke customer api key
+  // revokeApiAccess -> revoke a customer api key
   public async revokeApiAccess(userId: string): Promise<boolean> {
 
     let dbDto = {

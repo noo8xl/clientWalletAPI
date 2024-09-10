@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose'
+import {FIAT_NAME} from "../entity/customer/FiatName";
 
 export const CUSTOMER_SCHEMA = {
   _id: Schema.Types.ObjectId,
@@ -9,7 +10,7 @@ export const CUSTOMER_SCHEMA = {
 	apiKey: { unique: true, type: String, require: true },
 	isActive: { type: Boolean, require: true },
 	fiatName: {
-		enum: ["AUD", "USD", "EUR", "RUB", "AED"],
+		enum: FIAT_NAME,
 		type: String,
 		require: true,
 	},
@@ -18,3 +19,6 @@ export const CUSTOMER_SCHEMA = {
 	updatedAt: { type: Number, require: true },
 
 }
+
+
+
