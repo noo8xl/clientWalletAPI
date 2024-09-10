@@ -61,7 +61,7 @@ export class SolanaService extends WalletHelper implements Wallet{
     }
 
     this.status = await this.dbService.saveUserWallet(wt);
-		if (!this.status) throw await ErrorInterceptor.ExpectationFailed("method caught an error.")
+		if (!this.status) throw ErrorInterceptor.ExpectationFailed("method caught an error.")
 		return wt.address
   }
 

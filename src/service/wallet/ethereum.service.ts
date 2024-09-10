@@ -48,7 +48,7 @@ export class EthereumService extends WalletHelper implements Wallet {
     }
 
 		this.status = await this.dbService.saveUserWallet(wt);
-		if (!this.status) throw await ErrorInterceptor.ExpectationFailed("Wallet saving was failed.")
+		if (!this.status) throw ErrorInterceptor.ExpectationFailed("Wallet saving was failed.")
 		return wt.address
   }
 

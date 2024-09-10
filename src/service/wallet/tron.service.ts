@@ -53,7 +53,7 @@ export class TronService extends WalletHelper implements Wallet{
     }
 
     this.status = await this.dbService.saveUserWallet(wt);
-		if (!this.status) throw await ErrorInterceptor.ExpectationFailed("method caught an error.")
+		if (!this.status) throw ErrorInterceptor.ExpectationFailed("method caught an error.")
     return wt.address
   }
 
@@ -68,7 +68,7 @@ export class TronService extends WalletHelper implements Wallet{
     })
 			.catch((e) => {if (e) { this.status = false }})
 
-		if (!this.status) throw await ErrorInterceptor.ExpectationFailed("Can't get a balance.")
+		if (!this.status) throw ErrorInterceptor.ExpectationFailed("Can't get a balance.")
 
     console.log('coinData => ', coinData);
     const dataArray: any = coinData.data.tokens
