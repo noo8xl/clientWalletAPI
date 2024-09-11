@@ -24,7 +24,7 @@ export class WalletHelper {
 			.then((res) => { return res.data })
 			.catch((e) => {if (e) { status = false }})
 
-		if (!status) throw await ErrorInterceptor.ExpectationFailed("Can't get an rate data.")
+		if (!status) throw ErrorInterceptor.ExpectationFailed("Can't get an rate data.")
 
 		rateData = {
 			coinName: this.coinName,

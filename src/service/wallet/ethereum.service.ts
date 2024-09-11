@@ -1,7 +1,8 @@
 import * as ethWallet from 'ethereumjs-wallet'
 import Web3 from 'web3'
 import {Wallet} from "./walletInterface";
-import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet.types";
+import { RATE_DATA, WALLET } from "../../types/wallet/wallet.types";
+import {WALLET_REQUEST_DTO} from "../../dto/crypto/wallet.dto";
 import { ETH_KEY } from '../../config/configs';
 import { WalletDatabaseService } from "../database/wallet.db.service"
 import ErrorInterceptor from '../../exceptions/Error.exception';

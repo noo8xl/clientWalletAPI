@@ -1,7 +1,8 @@
 
 import solanaWeb3, { PublicKey } from '@solana/web3.js'
 import { SOL_KEY } from "../../config/configs"
-import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "src/types/wallet/wallet.types"
+import { RATE_DATA, WALLET } from "src/types/wallet/wallet.types"
+import {WALLET_REQUEST_DTO} from "../../dto/crypto/wallet.dto";
 import crypto from "crypto"
 import Web3 from '@solana/web3.js'
 import { Wallet } from './walletInterface'

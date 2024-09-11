@@ -11,11 +11,13 @@ import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios"
 import { CustomerDatabaseService } from '../service/database/customer.db.service'
 import { CacheService } from '../service/cache/cache.service'
 import {Customer} from "../entity/customer/Customer";
+import ErrorInterceptor from "../exceptions/Error.exception";
 
 export class TelegramNotificationApi {
   private readonly notifToken = NOTIFICATION_BOT_TOKEN
 	private readonly errorToken = ERROR_BOT_TOKEN
 	private readonly devId = ERR_CHAT_ID
+	private status: boolean = true
 
 
 	// messageInterceptor -> intercept a user message with start bot, get tg id, 2fa to approve transactions
@@ -50,11 +52,11 @@ export class TelegramNotificationApi {
 			}
 		})
 
-		bot.on("error", async () => await this.sendErrorMessage("Catched an error in notification bot."))
+		bot.on("error", async () => await this.sendErrorMessage("Caught an error in notification bot."))
 	}
 
 	// sendInfoMessage -> send 2fa message or other notifications to users 
-  public async sendInfoMessage(chatId: number, msg: string): Promise<boolean> {
+  public async sendInfoMessage(chatId: number, msg: string): Promise<void> {
 		const message: string = encodeURI(msg)
 		const url: string = `https://api.telegram.org/bot${this.notifToken}/sendMessage?chat_id=${chatId}&parse_mode=html&text=${message}`
 		
@@ -63,11 +65,13 @@ export class TelegramNotificationApi {
 			data: msg,
 			responseType: 'stream',
 		}
-		return await this.sendRequest(url, opts)
+
+		this.status = await this.sendRequest(url, opts)
+		if (!this.status) throw ErrorInterceptor.ExpectationFailed("Notification was failed.")
   }
 
 	// sendErrorMessage -> send error messages to developer
-	public async sendErrorMessage(msg: string): Promise<boolean> {
+	public async sendErrorMessage(msg: string): Promise<void> {
 		console.log('tg interact');
 		const message: string = encodeURI(msg)
 		const url: string = `https://api.telegram.org/bot${this.errorToken}/sendMessage?chat_id=${this.devId}&parse_mode=html&text=${message}`
@@ -77,7 +81,9 @@ export class TelegramNotificationApi {
 			data: msg,
 			responseType: 'stream',
 		}
-		return await this.sendRequest(url, opts)
+
+		this.status = await this.sendRequest(url, opts)
+		if (!this.status) throw ErrorInterceptor.ExpectationFailed("Notification was failed.")
 	}
 
   // ============================================================================================================= //

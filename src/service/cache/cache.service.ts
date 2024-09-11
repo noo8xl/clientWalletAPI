@@ -37,6 +37,22 @@ export class CacheService {
     return c;
   }
 
+	public async setManualTransactionCacheData(): Promise<void> {
+
+	}
+
+	public async getManualTransactionCachedData(userId: string): Promise<boolean> {
+		// await this.connectClient()
+		let temp = await this.rdb.hGetAll(userId)
+		const c  = JSON.parse(JSON.stringify(temp, null, 2))
+		console.log("cache is -> ", c);
+
+		if (!c) return null
+
+		await this.rdb.disconnect()
+		return c;
+	}
+
   // ################################################################################# 
 
   // clearCachedDataByKey -> delete cached data by key

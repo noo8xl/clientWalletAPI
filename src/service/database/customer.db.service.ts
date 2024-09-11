@@ -1,7 +1,7 @@
 import {MONGO_DB} from "../../config/configs"
 import {TelegramNotificationApi} from "../../api/notification.api";
 import {Helper} from "../../helpers/helper";
-import {CUSTOMER, GET_ACTIONS_LIST} from "../../types/customer/customer.types";
+import {GET_ACTIONS_LIST} from "../../types/customer/customer.types";
 import {CacheService} from "../cache/cache.service";
 import ActionModel from "../../models/Action.model";
 import CustomerModel from "../../models/Customer.model";
@@ -30,23 +30,23 @@ export class CustomerDatabaseService {
   }
 
   // findUserByFilter -> find user data by dto object filter ex => {userId: '123', userEmail: 'ex@mail.net'}
-  public async findUserByFilter(filter: any): Promise<any>{
+  public async findUserByFilter(filter: any): Promise<Customer>{
     await this.initConnection()
     try {
       this.status = await this.helper.validateObject(filter)
       const result: Customer = await this.customerModel.findOne(filter)
-      await this.disconnectClient()
-      if (!result) return false
+      if (!result) throw ErrorInterceptor.NotFoundError()
       return result
-    } catch (e) {
-      console.log("cached error \n-> ", e);
-      return false
-    }
+    } catch (e: any) {
+      throw await ErrorInterceptor.ServerError("db server error."+ e)
+    }	finally {
+			await this.disconnectClient()
+		}
   }
 
 
   // saveNewClient -> save new api user to db using mongoDB
-	public async saveNewClient(userDto: CUSTOMER ): Promise<boolean>  {
+	public async saveNewClient(userDto: Customer ): Promise<boolean>  {
     await this.initConnection()
 		let userId;
 		let actionLog: ActionLog = new ActionLog()
@@ -93,8 +93,8 @@ export class CustomerDatabaseService {
 						ACTION_STATUS.SUCCESS, "Customer has been successfully updated.")
 
 			await this.saveUserLogsData(actionLog.getAction())
-    } catch (e) {
-			throw ErrorInterceptor.ExpectationFailed(e)
+    } catch (e: any) {
+			throw ErrorInterceptor.ExpectationFailed(e.message())
     } finally {
       await this.disconnectClient()
     }
@@ -106,9 +106,9 @@ export class CustomerDatabaseService {
   public async getActionHistory(userDto: GET_ACTIONS_LIST): Promise<ActionLog[]> {
     await this.initConnection()
 		// let logList: ActionLog = new ActionLog();
-		let logList: ActionLog[]
+		let logList:
     try {
-      logList: ActionLog[] = await this.actionsModel
+      logList = await this.actionsModel
         .find({ userId: userDto.userId })
         .skip(userDto.skip)
         .limit(userDto.limit)

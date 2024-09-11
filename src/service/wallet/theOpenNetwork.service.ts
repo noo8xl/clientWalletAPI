@@ -2,7 +2,8 @@
 import { WalletContractV4, TonClient, Address } from "@ton/ton";
 import { mnemonicNew , KeyPair, mnemonicToWalletKey } from "ton-crypto";
 import {Wallet} from "./walletInterface";
-import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from "../../types/wallet/wallet.types";
+import { RATE_DATA, WALLET } from "../../types/wallet/wallet.types";
+import {WALLET_REQUEST_DTO} from "../../dto/crypto/wallet.dto";
 import { WalletDatabaseService } from "../database/wallet.db.service"
 import ErrorInterceptor from '../../exceptions/Error.exception';
 import {WalletHelper} from "./walletHelper";

@@ -18,6 +18,9 @@ export const CUSTOMER_SCHEMA = {
 	createdAt: { type: Number, require: true },
 	updatedAt: { type: Number, require: true },
 
+
+
+
 }
 
 

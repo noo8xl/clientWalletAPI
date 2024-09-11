@@ -84,8 +84,3 @@ export type RATE_DATA = {
   coinBalance: number
   fiatValue: number
 }
-export type WALLET_REQUEST_DTO = {
-  userId?: string
-  coinName: string
-  address?: string
-}

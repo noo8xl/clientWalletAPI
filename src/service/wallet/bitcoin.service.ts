@@ -4,7 +4,8 @@ import * as bitcoin from 'bitcoinjs-lib'
 // import bchaddr from 'bchaddrjs'
 
 import {Wallet} from "./walletInterface";
-import { RATE_DATA, WALLET, WALLET_REQUEST_DTO } from '../../types/wallet/wallet.types';
+import { RATE_DATA, WALLET } from '../../types/wallet/wallet.types';
+import {WALLET_REQUEST_DTO} from "../../dto/crypto/wallet.dto";
 import axios from 'axios';
 import { WalletDatabaseService } from "../database/wallet.db.service"
 import ErrorInterceptor from "../../exceptions/Error.exception";

@@ -37,6 +37,10 @@ export class CustomerDetails {
 		this.userId = userId
 	}
 
+	public getTelegramId(): number {
+		return this.telegramId;
+	}
+
 	public getCustomerDetails(): CustomerDetails {
 		return this;
 	}

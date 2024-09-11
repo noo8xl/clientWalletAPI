@@ -29,8 +29,12 @@ export class Customer {
 		this.apiKey = apiKey
 	}
 
-	public getId(): any {
+	public getId(): string {
 		return this._id
+	}
+
+	public getTelegramId(): number {
+		return this.customerDetails.getTelegramId();
 	}
 
 	public setCustomerDetails(customerDetails: CustomerDetails): void {
