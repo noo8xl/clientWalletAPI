@@ -36,4 +36,6 @@ export class WalletHelper {
 		console.log("rate obj is -> ", rateData);
 		return rateData
 	}
+
+	protected async send(): Promise<void> {}
 }

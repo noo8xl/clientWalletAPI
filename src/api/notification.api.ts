@@ -41,8 +41,8 @@ export class TelegramNotificationApi {
 						await bot.sendMessage(chatId, `Transaction was rejected.`)
 						return
 					} else if (msg.text === "Y") {
-						await c.clearCachedDataByKey(customer._id.toString())
-						await c.setCachedData({userId: customer._id.toString(), isApprove: true})
+						await c.clearCachedDataByKey(customer.getId())
+						await c.setCachedData({userId: customer.getId(), isApprove: true})
 						await bot.sendMessage(chatId, `Transaction will be approved.`)
 						return	
 					} else {

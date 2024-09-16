@@ -128,10 +128,10 @@ export class BitcoinService extends WalletHelper implements Wallet {
     if (cryptoValToFiat <= 50) {
       // send 100% balance to owner if usd val < 50
       // await new FeeCalculator(transaction data to calc fee ).calculateFeeInNetwork() < ----
-      // await send()  // from this.fromAddress to paymentArray[0].wallet
-      //   .then(async () => { await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData) })
-      //   .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
-      //   .catch((e:any) => { throw new Error(e) })
+      await super.send()  // from this.fromAddress to paymentArray[0].wallet
+        .then(await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData))
+        .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
+        .catch((e:any) => console.error())
       return ""
     } else {
       // sending coins to all wallets in one transaction
