@@ -1,5 +1,6 @@
 import { CACHE_DTO } from "../../types/cache/cache.types"
 import { createClient } from "redis";
+import ErrorInterceptor from "../../exceptions/Error.exception";
 
 export class CacheService {
   private rdb // -> should be typed
@@ -16,50 +17,95 @@ export class CacheService {
 
   // setCachedData -> set date to cache store 
   public async setCachedData(dto: CACHE_DTO): Promise<void> {
-		await this.connectClient()
-    await this.rdb.hSet(dto.userId, dto.isApprove)
-    await this.rdb.disconnect()
+
+		try {
+			await this.connectClient()
+			await this.rdb.hSet(dto.userId, dto.isApprove)
+
+		} catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`cache server was failed at <clearCachedDataByKey> with err ${e}`)
+		} finally {
+			await this.rdb.disconnect()
+		}
   }
 
   // ############### -> getters area
 
   // getCachedData -> could be used with customer <userId> as key 
   // or with <address> as key to get tsx cache data
-  public async getCachedData(userId: string): Promise<boolean> {
-		await this.connectClient()
-    let temp = await this.rdb.hGetAll(userId)
-    const c  = JSON.parse(JSON.stringify(temp, null, 2))
-    console.log("cache is -> ", c);
-    
-    if (!c) return null
+  public async getCachedData(userId: string): Promise<any> {
+		let c: any;
 
-    await this.rdb.disconnect()
+		try {
+			await this.connectClient()
+
+			let temp = await this.rdb.hGetAll(userId)
+			c = JSON.parse(JSON.stringify(temp, null, 2))
+			console.log("cache is -> ", c);
+
+		} catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`cache server was failed at <clearCachedDataByKey> with err ${e}`)
+		} finally {
+			await this.rdb.disconnect()
+		}
+
     return c;
   }
 
 	public async setManualTransactionCacheData(): Promise<void> {
 
+		try {
+			await this.connectClient()
+
+			// do some stuff here
+
+		} catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`cache server was failed at <clearCachedDataByKey> with err ${e}`)
+		} finally {
+			await this.rdb.disconnect()
+		}
 	}
 
-	public async getManualTransactionCachedData(userId: string): Promise<boolean> {
-		// await this.connectClient()
-		let temp = await this.rdb.hGetAll(userId)
-		const c  = JSON.parse(JSON.stringify(temp, null, 2))
-		console.log("cache is -> ", c);
+	public async getManualTransactionCachedData(userId: string): Promise<any> {
+		let c: any;
 
-		if (!c) return null
+		try {
+			await this.connectClient()
 
-		await this.rdb.disconnect()
-		return c;
+			let temp = await this.rdb.hGetAll(userId)
+			c = JSON.parse(JSON.stringify(temp, null, 2))
+			console.log("cache is -> ", c);
+
+		} catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`cache server was failed at <getManualTransactionCachedData> with err ${e}`)
+		} finally {
+			await this.rdb.disconnect()
+		}
+
+		return c
+
 	}
 
   // ################################################################################# 
 
   // clearCachedDataByKey -> delete cached data by key
   public async clearCachedDataByKey(key: string): Promise<void> {
-		await this.connectClient()
-    await this.rdb.del(key)
-    await this.rdb.disconnect()
+
+		try {
+			await this.connectClient()
+			await this.rdb.del(key)
+
+		} catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`cache server was failed at <clearCachedDataByKey> with err ${e}`)
+		} finally {
+			await this.rdb.disconnect()
+		}
+
   }
 
   // clearAllCachedData -> dpor all cached data * <should be used carefully>

@@ -1,36 +1,33 @@
 import {IsEmail,IsInstance,IsString} from "class-validator";
 import {CustomerDetails} from "./CustomerDetails";
+import {CUSTOMER} from "../../types/customer/customer.types";
 
 
 export class Customer {
 
 	@IsString()
-	private _id: string
-
+	private id: string
 	@IsEmail()
 	private userEmail: string
 	@IsString()
 	private domainName: string
 	@IsString()
 	private companyName: string
-	@IsString()
-	private apiKey: string
 
 	@IsInstance(CustomerDetails)
 	private customerDetails: CustomerDetails
 
 	constructor() {}
 
-	public setCustomer(id: string, email: string, domainName: string, companyName: string, apiKey: string): void {
-		this._id = id
-		this.userEmail = email
-		this.domainName = domainName
-		this.companyName = companyName
-		this.apiKey = apiKey
+	public setCustomer(candidate: CUSTOMER): void {
+		this.id = candidate._id
+		this.userEmail = candidate.userEmail
+		this.domainName = candidate.domainName
+		this.companyName = candidate.companyName
 	}
 
 	public getId(): string {
-		return this._id
+		return this.id
 	}
 
 	public getTelegramId(): number {

@@ -8,9 +8,9 @@ class CustomerController {
 
   public async changeFiatCurrencyDisplay(req: Request, res: Response, next: NextFunction): Promise<void>{
     let dto = { userId: req.params.userId, fiatName: req.params.fiatName }
-    try {
-      const result: boolean = await customerService.changeFiatDisplay(dto)
-      if (!result) throw await ErrorInterceptor.BadRequest()
+
+		try {
+      await customerService.changeFiatDisplay(dto)
       res.status(202).json({message: "Fiat name was changed."}).end()
     } catch (e) {
       next(e)
@@ -26,7 +26,7 @@ class CustomerController {
     }
 
     try {
-      const result: ActionLog[] | boolean = await customerService.getActionsData(dto)
+      const result: ActionLog[] = await customerService.getActionsData(dto)
       // if (!result) throw await ErrorInterceptor.ServerError("get Action list")
       res.status(200).json(result).end()
     } catch (e) {
@@ -35,14 +35,8 @@ class CustomerController {
   }
 
   public async revokeAnAccess(req: Request, res: Response, next: NextFunction): Promise<void>{
-
-    try {
-      const result: boolean = await customerService.revokeApiAccess(req.params.userId)
-      if (!result) throw await ErrorInterceptor.ServerError("revoke api access")
-      res.status(202).json({message: "Access to API was revoked."}).end()
-      } catch (e) {
-      next(e)
-    }
+		await customerService.revokeApiAccess(req.params.userId)
+		res.status(202).json({message: "Access to an API was revoked."}).end()
   }
 
 }

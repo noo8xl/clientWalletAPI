@@ -1,17 +1,21 @@
 
 import { coinList } from "../../config/configs";
+
 import { BitcoinService } from '../wallet/bitcoin.service';
 import { EthereumService } from "../wallet/ethereum.service";
 import { TronService } from "../wallet/tron.service";
 import { TheOpenNetworkService } from "../wallet/theOpenNetwork.service";
-import { SolanaService } from "../wallet/solana.service";
-import { WALLET_TYPE } from '../../types/wallet/wallet.types';
-import {WALLET_REQUEST_DTO} from "../../dto/crypto/wallet.dto";
 import { CacheService } from "../cache/cache.service";
-import { TelegramNotificationApi } from "../../api/notification.api";
+import { SolanaService } from "../wallet/solana.service";
 import { CustomerDatabaseService } from "../database/customer.db.service";
+import { TelegramNotificationApi } from "../../api/notification.api";
+
 import ErrorInterceptor from "../../exceptions/Error.exception";
-import {Customer} from "../../entity/customer/Customer";
+
+import { WALLET_REQUEST_DTO } from "../../dto/crypto/wallet.dto";
+import { WALLET_TYPE } from '../../types/wallet/wallet.types';
+import { Customer } from "../../entity/customer/Customer";
+
 
 // CryptoService -> CRUD interaction with different blockchains 
 class CryptoService {
@@ -52,8 +56,23 @@ class CryptoService {
 
   }
 
+	// sendTransactionAutomatically -> send transaction automatically if balance was found
+	public async sendTransactionAutomatically(payload: WALLET_REQUEST_DTO): Promise<void> {
+		const msg: string = `
+      You should approve <send transaction> action.
+      To approve tsx -> send "Y"
+      To reject tsx -> send "N"
+      `;
+		let customer: Customer = await this.customerDb.findUserByFilter({id: payload.userId})
+		await this.notificator.sendInfoMessage(customer.getTelegramId(), msg)
+		// set cache here ->
+		await this.cacheService.setManualTransactionCacheData()
+
+	}
+
 	public async approveTransaction(): Promise<string> {
 		// get tsx from cache if available <-
+		let userId: string = ''
 		const c: any  = await this.cacheService.getManualTransactionCachedData(userId)
 		if (!c) throw ErrorInterceptor.NotFoundError()
 		let payload: WALLET_REQUEST_DTO = {

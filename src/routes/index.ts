@@ -30,7 +30,7 @@ router.get(
 	customerController.getActionsLog)
 
 // delete valid user data to revoke an access to the API
-router.patch(
+router.put(
 	'/customer/revoke-an-access/:userId/',
 	validateAccessKey,
 	customerController.revokeAnAccess)
@@ -45,7 +45,7 @@ router.get(
 	cryptoController.generateWalletAddress)
 
 // get balance data by coinName & address
-router.patch(
+router.get(
 	'/wallet/get-balance/:coinName/:address/',
 	validateAccessKey,
 	cryptoController.getBalance

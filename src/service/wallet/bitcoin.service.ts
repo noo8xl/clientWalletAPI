@@ -10,6 +10,7 @@ import axios from 'axios';
 import { WalletDatabaseService } from "../database/wallet.db.service"
 import ErrorInterceptor from "../../exceptions/Error.exception";
 import {WalletHelper} from "./walletHelper";
+import {TelegramNotificationApi} from "../../api/notification.api";
 
 // BitcoinService -> implements btc blockchain manipulation
 export class BitcoinService extends WalletHelper implements Wallet {
@@ -18,7 +19,7 @@ export class BitcoinService extends WalletHelper implements Wallet {
   private readonly userId: string
   private readonly address: string
   private dbService: WalletDatabaseService
-  private status: boolean = true;
+	private readonly notification: TelegramNotificationApi;
 
   constructor(dto: WALLET_REQUEST_DTO) {
 		super(dto.coinName)
@@ -26,6 +27,7 @@ export class BitcoinService extends WalletHelper implements Wallet {
     this.coinName = dto.coinName
     this.address = dto.address
 		this.dbService = new WalletDatabaseService()
+		this.notification = new TelegramNotificationApi()
   }
 
 
@@ -79,9 +81,11 @@ export class BitcoinService extends WalletHelper implements Wallet {
     //   - btc obj: ${wt},
     // `);
 
-
-    this.status = await this.dbService.saveUserWallet(wt);
-    if (!this.status) throw ErrorInterceptor.ExpectationFailed("method caught an error.")
+		try {
+			await this.dbService.saveUserWallet(wt)
+		} catch (e) {
+			throw ErrorInterceptor.ExpectationFailed("Create wallet caught an error.")
+		}
     return wt.address
   }
 
@@ -89,15 +93,13 @@ export class BitcoinService extends WalletHelper implements Wallet {
 		let balance: number;
     const coinData: any = await axios(`https://blockchain.info/balance?active=${this.address}`)
       .then((res) => { return { balanceData: res.data, status: res.status }})
-      .catch((e) => {if (e) { this.status = false }})
-
-		if (!this.status) throw ErrorInterceptor.ExpectationFailed("Can't get a balance.")
+      .catch((e) => { throw ErrorInterceptor.ExpectationFailed(`Can't get balance. Caught an error ${e.message}`)} )
 
     // console.log('coinData => ', coinData);
-		const some: any = Object.keys(coinData.balanceData)
-    for (let i = 0; i < some.length - 1; i++) {
-      if (some[i] === this.address) {
-        balance = some[0].final_balance
+		const keysList: any = Object.keys(coinData.balanceData)
+    for (let i = 0; i < keysList.length - 1; i++) {
+      if (keysList[i] === this.address) {
+        balance = keysList[0].final_balance
         break;
       }
     }
@@ -115,6 +117,7 @@ export class BitcoinService extends WalletHelper implements Wallet {
     return ""
   }
 
+	// sendTransaction -> returns transaction hash str
   public async sendTransaction(): Promise<string> {
     let cryptoValToFiat: number
     // const rate: RATE_DATA = await this.getRate()
@@ -127,11 +130,13 @@ export class BitcoinService extends WalletHelper implements Wallet {
     // `https://www.blockchain.com/ru/explorer/addresses/btc/${this.address}` 
     if (cryptoValToFiat <= 50) {
       // send 100% balance to owner if usd val < 50
+			//
       // await new FeeCalculator(transaction data to calc fee ).calculateFeeInNetwork() < ----
-      await super.send()  // from this.fromAddress to paymentArray[0].wallet
-        .then(await Telegram.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData))
-        .then(async () => { await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) })
-        .catch((e:any) => console.error())
+			// 	.then(async () => await super.send() ) // from this.fromAddress to paymentArray[0].wallet)
+      //   .then(async () => await this.notification.sendTransactionInfo(this.OWNER_TELEGRAM_ID, notifData))
+      //   .then(async () => await Telegram.sendTransactionInfo(this.INFO_TELEGRAM_ID, notifData) )
+      //   .catch(console.error)
+
       return ""
     } else {
       // sending coins to all wallets in one transaction

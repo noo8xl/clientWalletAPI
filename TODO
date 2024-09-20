@@ -10,7 +10,7 @@
  -> refactor models +++ -----------------
  -> refactor schemas and add sql db table types +++ -------------------
 
- -> customer colection and actions +++ --------------------
+ -> customer collection and actions +++ --------------------
  -> save actions +++ ----------------------
 
 
@@ -43,3 +43,14 @@
  if transaction -> send 2fa telegram msg  +++ ------------------
       -> reply === 'Y" => approve
       -> reply === "N" => reject
+
+
+--------------------------------------------------------------
+
+parser :
+	-> search for balances by isChecked = false
+	-> update balance and set  isChecked flag to true
+	-> get a list of wallets with a balance > 0
+	-> send transactions and update balances to 0 and isUsed to true
+
+	loop ---

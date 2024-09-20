@@ -15,16 +15,12 @@ export class WalletHelper {
 
 	protected async getRate(fiatName: string, balance: number): Promise<RATE_DATA> {
 		let rateData: RATE_DATA;
-		let status: boolean;
-
 		const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
 		const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`
 
 		const data = await axios(getRateUrl)
 			.then((res) => { return res.data })
-			.catch((e) => {if (e) { status = false }})
-
-		if (!status) throw ErrorInterceptor.ExpectationFailed("Can't get an rate data.")
+			.catch((e: unknown) => { throw ErrorInterceptor.ExpectationFailed("Can't get a rate data.") })
 
 		rateData = {
 			coinName: this.coinName,

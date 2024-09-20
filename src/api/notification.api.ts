@@ -6,19 +6,22 @@ import {
 	ERROR_BOT_TOKEN,
 	NOTIFICATION_BOT_TOKEN
 } from "../config/configs"
+
 import TelegramBot from 'node-telegram-bot-api'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios"
+
 import { CustomerDatabaseService } from '../service/database/customer.db.service'
 import { CacheService } from '../service/cache/cache.service'
-import {Customer} from "../entity/customer/Customer";
+
 import ErrorInterceptor from "../exceptions/Error.exception";
+import {Customer} from "../entity/customer/Customer";
 
 export class TelegramNotificationApi {
   private readonly notifToken = NOTIFICATION_BOT_TOKEN
 	private readonly errorToken = ERROR_BOT_TOKEN
 	private readonly devId = ERR_CHAT_ID
-	private status: boolean = true
 
+	constructor() {}
 
 	// messageInterceptor -> intercept a user message with start bot, get tg id, 2fa to approve transactions
 	public async messageInterceptor(): Promise<void> {
@@ -66,8 +69,7 @@ export class TelegramNotificationApi {
 			responseType: 'stream',
 		}
 
-		this.status = await this.sendRequest(url, opts)
-		if (!this.status) throw ErrorInterceptor.ExpectationFailed("Notification was failed.")
+		await this.sendRequest(url, opts)
   }
 
 	// sendErrorMessage -> send error messages to developer
@@ -82,26 +84,23 @@ export class TelegramNotificationApi {
 			responseType: 'stream',
 		}
 
-		this.status = await this.sendRequest(url, opts)
-		if (!this.status) throw ErrorInterceptor.ExpectationFailed("Notification was failed.")
+		await this.sendRequest(url, opts)
 	}
 
   // ============================================================================================================= //
   // ############################################# private usage area ############################################ //
   // ============================================================================================================= //
 
-	// sendRequest -> send http request with settend params
-	private async sendRequest(url: string, options: AxiosRequestConfig): Promise<boolean> {
+	// sendRequest -> send http request
+	private async sendRequest(url: string, options: AxiosRequestConfig): Promise<void> {
 		return await axios(url,options)
 			.then((res: AxiosResponse) => {
 				console.log(res.status)
 				console.log(res.statusText)
 				// console.log('res body => ', res);
-				return true
 			})
 			.catch((e: AxiosError) => {
-				console.log('error => ', e.message);
-				return false
+				throw ErrorInterceptor.ExpectationFailed(`Notification was failed with error: ${e.message}`)
 			})
 	}
 

@@ -1,4 +1,0 @@
-
-export enum ACTION_STATUS {
-	SUCCESS, PENDING,FAILED
-}

@@ -1,14 +1,13 @@
-import {IsEnum, IsInstance, IsInt, IsNumber, IsString, ValidateIf, ValidateNested} from "class-validator";
+import {IsEnum, IsInstance, IsInt, IsNumber, IsString} from "class-validator";
 import {TransactionDetails} from "./TransactionDetails";
-import {CoinNames} from "../crypto/CoinNames";
+import {COIN_NAME_LIST} from "../../types/wallet/wallet.types";
+
 
 
 export class Transaction {
 
-	@IsInt()
-	private _id?: number
-	@IsEnum(CoinNames)
-	private coinName: CoinNames
+	@IsEnum(COIN_NAME_LIST)
+	private coinName: COIN_NAME_LIST
 	@IsInt()
 	private recruiterSum: number
 	@IsInt()
@@ -26,10 +25,9 @@ export class Transaction {
 	constructor() {}
 
 	public setTransaction(
-		id: number, coinName: CoinNames, recruiterSum: number, staffSum: number,
+		coinName: COIN_NAME_LIST, recruiterSum: number, staffSum: number,
 		staffWallet: string, recruiterWallet: string, balanceSum: number ): void {
 
-		this._id = id
 		this.coinName = coinName
 		if (recruiterSum !== null) this.recruiterSum = recruiterSum
 		this.staffSum = staffSum

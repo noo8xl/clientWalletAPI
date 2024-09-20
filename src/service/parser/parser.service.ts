@@ -14,10 +14,8 @@ type wtBalanceStruct = {
 }
 
 export class ParserService {
-  private coinName: string
-  private stamp: number
-  private fromStamp: number
-  private wtList: WALLET_LIST[] 
+  private readonly coinName: string
+  private wtList: WALLET_LIST[]
   private balances: wtBalanceStruct[]
   private databaseService: WalletDatabaseService
 
@@ -27,16 +25,9 @@ export class ParserService {
     this.databaseService = new WalletDatabaseService()
   }
 
-  // setParams -> set dates range
-  async setParams(): Promise<void> {
-    this.stamp = new Date().getTime()
-    this.fromStamp = this.stamp - (1000 * 60 * 60 * 48)
-  }
-
-  // getWalletListByParams -> get wallets from database by setted params
+  // getWalletListByParams -> get wallets from a database by set params
   async getWalletListByParams(): Promise<void> {
-    let walletList: any = await this.databaseService.getWalletList(this.coinName, this.fromStamp)
-    if(!walletList) return
+    let walletList: any = await this.databaseService.getWalletList(this.coinName)
     if(!walletList.length) {
       console.log("empty set. wallet list len is -> ", walletList.length);
       return
@@ -44,17 +35,19 @@ export class ParserService {
     this.wtList = walletList
   }
 
-  // getWalletBalances -> get balances, update wallet statuses and push balances in <this.balances> array
+  // getWalletBalances -> get balances, update wallet statuses, and push balances in <this.balances> array
   async getWalletBalances(): Promise<void> {
+
+
     balanceSeeker: for (let i = 0; i <= this.wtList.length -1; i++) {
       let balance: number = await cryptoService.getBalance({coinName: this.wtList[i].coinName, address: this.wtList[i].address})
-      if(balance < 0) 
+      if(balance < 0)
         throw await ErrorInterceptor.ServerError(`
           getWalletBalances was failed. The wallet is: 
           coinName: ${this.coinName}, 
           address: ${this.wtList[i].address}`
         )
-      if(balance = 0) await this.databaseService.updateWalletStatus(this.wtList[i].id, false, true)
+      if(balance === 0) await this.databaseService.updateWalletStatus(this.wtList[i].id, false, true)
       if(balance > 0) {
         this.balances.push({coinName: this.wtList[i].coinName, address: this.wtList[i].address, balance: balance})
         await this.databaseService.updateWalletBalance(this.wtList[i].id, this.wtList[i].balance)
@@ -64,18 +57,22 @@ export class ParserService {
     }
   }
 
-  // getCoinsFromWallet -> run through the <this.balances> and call <sendTransaction> here to send the coins from wallet to owner 
+  // getCoinsFromWallet -> run through the <this.balances> and call <sendTransaction> here to send the coins from wallet to owner
   async getCoinsFromWallet(): Promise<void> {
-    console.log("balance array length is -> ", this.balances.length);
-    let result: string | boolean = await cryptoService.sendManualTransaction({coinName: this.coinName, address: this.balances[0].address})
-    if(!result) 
-      throw await ErrorInterceptor.ServerError(`
-        getCoinsFromWallet was failed. The wallet is: 
+		console.log("balance array length is -> ", this.balances.length);
+
+		try	{
+			while (this.balances.length != 0) {
+				await cryptoService.sendTransactionAutomatically({coinName: this.coinName, address: this.balances[0].address})
+				this.balances.shift()
+				await this.getCoinsFromWallet()
+			}
+		} catch (e) {
+			throw await ErrorInterceptor.ServerError(`
+        getCoinsFromWallet was failed. The wallet was: 
         coinName: ${this.balances[0].coinName}, 
-        address: ${this.balances[0].address}`
-      )
-      
-    this.balances.shift()
-    await this.getCoinsFromWallet()
+        address: ${this.balances[0].address}
+        `)
+		}
   }
 }

@@ -1,40 +1,35 @@
 import {IsBoolean, IsDate, IsEnum, IsNumber, IsString} from "class-validator";
-import {FIAT_NAME} from "./FiatName";
-import process from "node:process";
+import {FIAT_NAME} from "../../types/wallet/wallet.types";
+import {CUSTOMER_PARAMS} from "../../types/customer/customer.types";
+
 
 export class CustomerDetails {
 
 	@IsNumber()
 	private telegramId: number
 	@IsEnum(FIAT_NAME)
-	private fiatName: FIAT_NAME = FIAT_NAME.USD
+	private fiatName: FIAT_NAME
 	@IsBoolean()
-	private isActive: boolean = true
+	private isActive: boolean
 	@IsDate()
-	private createdAt: number = new Date().getTime()
+	private createdAt: number
 	@IsDate()
-	private updatedAt: number = new Date().getTime()
+	private updatedAt: number
+	@IsString()
+	private apiKey: string
 	@IsString()
 	private userId: string
 
 	constructor() {}
 
-	public setDefault(telegramId: number, userId: string): void {
-		this.telegramId = telegramId
-		this.userId = userId
-		// console.log(this)
-		process.stdout.write(this.toString())
-	}
-
-	public setCustomerDetails(
-		telegramId: number, fiatName: FIAT_NAME, isActive: boolean,
-		updatedAt: number, createdAt: number, userId: string): void {
-		this.telegramId = telegramId
-		this.fiatName = fiatName
-		this.isActive = isActive
-		this.updatedAt = updatedAt
-		this.createdAt = createdAt
-		this.userId = userId
+	public setCustomerDetails( params: CUSTOMER_PARAMS ): void {
+		this.apiKey = params.apiKey
+		this.telegramId = params.telegramId
+		this.fiatName = params.fiatName
+		this.isActive = params.isActive
+		this.updatedAt = params.updatedAt
+		this.createdAt = params.createdAt
+		this.userId = params.userId
 	}
 
 	public getTelegramId(): number {

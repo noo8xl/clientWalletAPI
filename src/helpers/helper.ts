@@ -45,7 +45,6 @@ export class Helper {
     return result
   }
 
-  public async prepareCacheData(dto: any): Promise<any>{}
 
   ////////// -----------------------------------
 

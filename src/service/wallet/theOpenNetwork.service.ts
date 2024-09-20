@@ -49,8 +49,7 @@ export class TheOpenNetworkService extends WalletHelper implements Wallet {
       balance: 0,
     }
 
-    this.status = await this.dbService.saveUserWallet(wt);
-		if (!this.status) throw ErrorInterceptor.ExpectationFailed("method caught an error.")
+    await this.dbService.saveUserWallet(wt);
     return wt.address
   }
 

@@ -1,148 +1,197 @@
+
+
+import mongoose from "mongoose";
 import {MONGO_DB} from "../../config/configs"
-import {TelegramNotificationApi} from "../../api/notification.api";
-import {Helper} from "../../helpers/helper";
+
+import ErrorInterceptor from "../../exceptions/Error.exception";
+
+import {ACTION} from "../../types/action/Action.types";
 import {GET_ACTIONS_LIST} from "../../types/customer/customer.types";
-import {CacheService} from "../cache/cache.service";
+import {CUSTOMER} from "../../types/customer/customer.types";
+import {CUSTOMER_PARAMS} from "../../types/customer/customer.types";
+import {AUTH_CLIENT_DTO} from "../../dto/auth/client.dto.type";
+
+import {Customer} from "../../entity/customer/Customer";
+import {CustomerDetails} from "../../entity/customer/CustomerDetails";
+import {ActionLog} from "../../entity/action/ActionLog";
+
+import CustomerParamsModel from "../../models/CustomerParams.model";
 import ActionModel from "../../models/Action.model";
 import CustomerModel from "../../models/Customer.model";
 
-import mongoose from "mongoose";
-import {Customer} from "../../entity/customer/Customer";
-import {ActionLog} from "../../entity/action/ActionLog";
-import {ACTION_STATUS} from "../../entity/action/ActionStatus";
-import ErrorInterceptor from "../../exceptions/Error.exception";
 
 
 export class CustomerDatabaseService {
-  private readonly stamp: number = new Date().getTime()
   private readonly actionsModel = ActionModel
   private readonly customerModel = CustomerModel
+	private readonly customerParamsModel = CustomerParamsModel
 
-  private status: boolean = true
-  private helper: Helper
-  private cacheService: CacheService
-  private notificator: TelegramNotificationApi
+  constructor() { }
 
-  constructor() {
-    this.helper = new Helper()
-    this.cacheService = new CacheService()
-    this.notificator = new TelegramNotificationApi()
-  }
+	public async getCustomerId(filter: any): Promise<string> {
+		let customerId: string;
+
+		try {
+			await this.initConnection()
+			const response: CUSTOMER = await this.customerModel.findOne<CUSTOMER>(filter)
+			customerId = response._id.toString();
+
+		} catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`customer db server was failed at <getCustomerId> with err ${e}`)
+		} finally {
+			await this.disconnectClient()
+		}
+
+		return customerId
+	}
 
   // findUserByFilter -> find user data by dto object filter ex => {userId: '123', userEmail: 'ex@mail.net'}
   public async findUserByFilter(filter: any): Promise<Customer>{
-    await this.initConnection()
+
+		let customer: Customer = new Customer()
+		let customerDetails: CustomerDetails = new CustomerDetails()
+
     try {
-      this.status = await this.helper.validateObject(filter)
-      const result: Customer = await this.customerModel.findOne(filter)
-      if (!result) throw ErrorInterceptor.NotFoundError()
-      return result
-    } catch (e: any) {
-      throw await ErrorInterceptor.ServerError("db server error."+ e)
-    }	finally {
+			await this.initConnection()
+      const candidate: CUSTOMER = await this.customerModel.findOne<CUSTOMER>(filter)
+			const params: CUSTOMER_PARAMS = await this.customerParamsModel.findOne<CUSTOMER_PARAMS>({userId: filter?.userId})
+
+			customer.setCustomer(candidate)
+			customerDetails.setCustomerDetails(params)
+			customer.setCustomerDetails(customerDetails)
+
+    } catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`customer db server was failed at <findUserByFilter> with err ${e}`)
+    } finally {
 			await this.disconnectClient()
 		}
+
+		return customer.getCustomer()
   }
 
 
-  // saveNewClient -> save new api user to db using mongoDB
-	public async saveNewClient(userDto: Customer ): Promise<boolean>  {
-    await this.initConnection()
-		let userId;
-		let actionLog: ActionLog = new ActionLog()
+  // saveNewClient -> save new user with default params
+	public async saveNewClient(userDto: AUTH_CLIENT_DTO ): Promise<void>  {
 
-    try {
-      this.status = await this.helper.validateObject(userDto)  
-      if(!this.status) return false
-			const result = await this.customerModel.create(userDto)
-			userId = result._id.toString()
+		let log: ACTION = {
+			action: "Customer has been successfully signed up.",
+			customerId: ''
+		}
 
-			actionLog.setAction(userId, this.stamp, ACTION_STATUS.SUCCESS, "Customer has been successfully registered.")
+		let base = {
+			userEmail: userDto.userEmail,
+			domainName: userDto.domainName,
+			companyName: userDto.companyName,
+		}
+		let params = {
+			apiKey: userDto.apiKey,
+			telegramId: userDto.telegramId
+		}
 
-      // set cache data here <- 
+		try {
+			await this.initConnection()
+			let customer: CUSTOMER = await this.customerModel.create<CUSTOMER>(base)
+			await this.customerParamsModel.create(params)
 
-      await this.saveUserLogsData(actionLog.getAction())
-    } catch (e: any) {
-			throw ErrorInterceptor.ExpectationFailed(e)
-    } finally {
-      await this.disconnectClient()
-    }
-		return this.status
+			log.customerId = customer._id.toString()
+			await this.saveUserLogsData(log)
+
+		} catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`customer db server was failed at <saveNewClient> with err ${e}`)
+		} finally {
+			await this.disconnectClient()
+		}
 	}
 
   // updateCustomerProfile -> update fields in customer document 
-  public async updateCustomerProfile(userDto: any): Promise<boolean> {
-    await this.initConnection()
-    let actionLog: ActionLog = new ActionLog()
+  public async updateCustomerProfile(userDto: any): Promise<void> {
+
+		let log: ACTION = {
+			action: "Customer has been successfully updated.",
+			customerId: ''
+		}
 
     try {
-      this.status = await this.helper.validateObject(userDto)
-      
-      const result = await this.customerModel.findOneAndUpdate(
-        userDto.filter,
-        userDto.doc,
-        { returnOriginal: false }
-      )
+			await this.initConnection()
 
-      !result
-				? actionLog.setAction(
-						userDto.userId, this.stamp,
-						ACTION_STATUS.FAILED, "Customer updating was failed.")
-				: actionLog.setAction(
-						userDto.userId, this.stamp,
-						ACTION_STATUS.SUCCESS, "Customer has been successfully updated.")
+			let base = await this.customerModel.findOneAndUpdate<CUSTOMER>(
+				userDto.filter,
+				userDto.doc,
+				{ returnOriginal: false }
+			)
 
-			await this.saveUserLogsData(actionLog.getAction())
-    } catch (e: any) {
-			throw ErrorInterceptor.ExpectationFailed(e.message())
+			await this.customerParamsModel.findOneAndUpdate<CUSTOMER_PARAMS>(
+				{ returnOriginal: false }
+			)
+
+			log.customerId = base._id.toString()
+			await this.saveUserLogsData(log)
+
+    } catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`customer db server was failed at <updateCustomerProfile> with err ${e}`)
     } finally {
       await this.disconnectClient()
     }
-		return this.status
-
   }
 
-  // getActionHistory -> get user action history by setted params
+  // getActionHistory -> get user action history
   public async getActionHistory(userDto: GET_ACTIONS_LIST): Promise<ActionLog[]> {
-    await this.initConnection()
-		// let logList: ActionLog = new ActionLog();
-		let logList:
-    try {
-      logList = await this.actionsModel
-        .find({ userId: userDto.userId })
-        .skip(userDto.skip)
-        .limit(userDto.limit)
-        .exec()
 
-			// logList
-    } catch (e) {
-			throw ErrorInterceptor.ExpectationFailed(e)
-    } finally {
-      await this.disconnectClient()
-    }
+		let logList: ActionLog[] = [];
+		let actionItem: ActionLog = new ActionLog();
+
+		try {
+			await this.initConnection()
+			let list: ACTION[] = await this.actionsModel
+				.find<ACTION>({ customerId: userDto.userId })
+				.skip(userDto.skip)
+				.limit(userDto.limit)
+				.exec()
+
+			for (let i = 0; i <= list.length -1; i++) {
+				actionItem.setAction(list[i])
+				logList.push(actionItem.getAction())
+			}
+
+		} catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`customer db server was failed at <getActionHistory> with err ${e}`)
+		} finally {
+			await this.disconnectClient()
+		}
+
 		return logList
 	}
 
   // saveUserLogsData -> save customer actions log to db
-  public async saveUserLogsData(actionLog: ActionLog): Promise<void> {
-    // await this.initConnection()
-    try {
-      this.status = await this.helper.validateObject(actionLog)
-      await this.actionsModel.create(actionLog)
-    } catch (e) {
-      console.log("cached error \n-> ", e);
-      this.status = false
-    } finally {
-      await this.disconnectClient()
-    }
+  public async saveUserLogsData(actionLog: ACTION): Promise<void> {
+
+		try {
+			await this.initConnection()
+			await this.actionsModel.create<ACTION>(actionLog)
+
+		} catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`customer db server was failed at <saveUserLogsData> with err ${e}`)
+		} finally {
+			await this.disconnectClient()
+		}
   }
 
   // ============================================================================================================= //
-  // ############################################# private usage area ############################################ //
+  // ########################################## internal methods area ############################################ //
   // ============================================================================================================= //
 
   private async initConnection(): Promise<void> {
     await mongoose.connect(MONGO_DB.link)
+			// .then(async () => { console.log("customer db connected") })
+			.catch(async (e: unknown) => {
+				throw await ErrorInterceptor.ServerError(`Customer database connection error ${e}`)
+			})
   }
 
   private async disconnectClient(): Promise<void> {

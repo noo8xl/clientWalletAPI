@@ -1,12 +1,15 @@
 import { Schema } from 'mongoose'
-import {ACTION_STATUS} from "../entity/action/ActionStatus";
+import {ACTION} from "../types/action/Action.types";
 
-export const CUSTOMER_ACTION_SCHEMA = {
+export const CUSTOMER_ACTION_SCHEMA = new Schema<ACTION>({
 
-  _id: Schema.Types.ObjectId,
+		_id: Schema.Types.ObjectId,
 
-  action: { type: String, require: true},
-  status: { type: String, enum: ACTION_STATUS, require: true },
-  date: { type: Number, require: true},
-  userId: { type: String, ref: "Customer", require: true }
-}
+		action: { type: String, required: true},
+		date: { type: Number, required: true, default: Date.now() },
+		customerId: { type: String, ref: "Customer", required: true }
+	},
+	{
+		collection: "Actions"
+	}
+)

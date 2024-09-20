@@ -1,3 +1,5 @@
+import {CustomerDatabaseService} from "../database/customer.db.service";
+
 const TronWeb = require('tonweb')
 import axios, { AxiosRequestHeaders } from 'axios';
 import { TRON_API_KEY } from "../../config/configs";
@@ -15,8 +17,8 @@ export class TronService extends WalletHelper implements Wallet{
   private readonly userId: string
   private readonly address: string
 
-  private dbService: WalletDatabaseService
-  private status: boolean = true
+  private readonly dbService: WalletDatabaseService
+	private readonly customerDb: CustomerDatabaseService
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
@@ -24,6 +26,7 @@ export class TronService extends WalletHelper implements Wallet{
     this.coinName = dto.coinName
     this.address = dto.address
 		this.dbService = new WalletDatabaseService()
+		this.customerDb = new CustomerDatabaseService()
   }
 
   public async createWallet(): Promise<string> {
@@ -51,8 +54,6 @@ export class TronService extends WalletHelper implements Wallet{
       balance: 0,
     }
 
-    this.status = await this.dbService.saveUserWallet(wt);
-		if (!this.status) throw ErrorInterceptor.ExpectationFailed("method caught an error.")
     return wt.address
   }
 
@@ -65,21 +66,17 @@ export class TronService extends WalletHelper implements Wallet{
       url: reqUrl,
       headers: payload
     })
-			.catch((e) => {if (e) { this.status = false }})
+			.then((res) => {return res.data.tokens})
+			.catch((e:unknown) => { throw ErrorInterceptor.ExpectationFailed(`Can't get a balance. Error is ${e}`) })
 
-		if (!this.status) throw ErrorInterceptor.ExpectationFailed("Can't get a balance.")
-
-    console.log('coinData => ', coinData);
-    const dataArray: any = coinData.data.tokens
-    console.log('received data  => ', coinData.data.tokens);
-    for (let i = 0; i < dataArray.length; i++) 
-     trxNetworkCoinBalance = +dataArray[i].balance / 1_000_000
+    for (let i = 0; i < coinData.length; i++)
+     trxNetworkCoinBalance = +coinData[i].balance / 1_000_000
 
     return Number(trxNetworkCoinBalance)
   }
 
   public async getWallet(): Promise<WALLET> {
-    let wt: WALLET;
+    let wt: WALLET; // = await this.dbService.getWalletInfo()
     return wt;
   }
 

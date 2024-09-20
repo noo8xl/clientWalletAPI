@@ -5,6 +5,24 @@ import { EthereumService } from "../../service/wallet/ethereum.service"
 import { TheOpenNetworkService } from "../../service/wallet/theOpenNetwork.service"
 import { TronService } from "../../service/wallet/tron.service"
 
+
+export enum FIAT_NAME {
+	AUD, USD, EUR, RUB, AED
+}
+
+
+// type COIN_NAME_LIST = "btc" | "etc" | "trx" | "ton" | "sol"
+export enum COIN_NAME_LIST {
+	BTC, ETC, TRX, TON, SOL
+}
+
+export type WALLET_KEYS = {
+	public: any
+	private: any
+}
+
+
+
 type BITCOIN_WALLET = {
   userId: string
   coinName: string

@@ -1,7 +1,7 @@
 
 import { RATE_DATA, WALLET } from "../../types/wallet/wallet.types"
 
-// this is a factory for the Wallet area of the app
+// this is a factory for the entire Wallet
 export interface Wallet {
 
 	// create a wallet

@@ -3,7 +3,7 @@
 import mysql, { ResultSetHeader, QueryError, RowDataPacket } from 'mysql2'
 import { TelegramNotificationApi } from '../../api/notification.api';
 import { MYSQL_DB } from '../../config/configs';
-import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from '../../types/database/db.response.types';
+// import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from '../../types/database/db.response.types';
 import { WALLET, WALLET_LIST } from '../../types/wallet/wallet.types';
 import ErrorInterceptor from '../../exceptions/Error.exception';
 
@@ -15,9 +15,8 @@ export class WalletDatabaseService {
 	private readonly dbUser = MYSQL_DB.userName
 	private readonly dbPassword = MYSQL_DB.userPassword
 	private readonly dbName = MYSQL_DB.databaseName
-	private status: boolean = true;
 
-	private notificator: TelegramNotificationApi
+	private readonly notificator: TelegramNotificationApi
 
 	constructor() { 
 		this.notificator = new TelegramNotificationApi()
@@ -55,26 +54,20 @@ export class WalletDatabaseService {
 
 
 	// saveUserWallet -> save wallet to db for current user
-	public async saveUserWallet(walletDto: WALLET): Promise<boolean> {
+	public async saveUserWallet(walletDto: WALLET): Promise<void> {
 		
 		const stamp: number = new Date().getTime()
-
-		// searchWalletsql -> filter to get saved wallet id
-		const searchWalletql: string = `
-			SELECT id, 
-			FROM WalletList
-			WHERE address = ?
-		`;
+		const searchWalletSql: string = `SELECT id FROM WalletList WHERE address=?`;
 
 		const walletListSql: string = `
-			INSERT INTO WalletList 
+			INSERT INTO wallet_list 
       ( coinName, address, balance, userId )
       VALUES 
       (?, ?, ?)
 		`;
 
 		const walletDetailSql: string = `
-			INSERT INTO WalletDetails
+			INSERT INTO wallet_details
 			( privateKey, publicKey, seedPhrase, mnemonic, walletId )
 			VALUES 
 			(?, ?, ?, ?, ?)
@@ -106,66 +99,81 @@ export class WalletDatabaseService {
 			stamp,
 			stamp,
 		]
-		
-		await this.insertData(walletListSql, walletListVals)
-		let result = await this.selectData(searchWalletql, [walletDto.address])
-		if(!this.status) {
-			await this.notificator.sendErrorMessage("wallet db selection")
-			return false
+
+		try {
+			await this.initConnection()
+
+			await this.insertData(walletListSql, walletListVals)
+			const savedWallet = await this.selectData(searchWalletSql, [walletDto.address])
+
+			walletDetailVals.push(savedWallet[0].id)
+			walletParamsVals.push(savedWallet[0].id)
+
+			// // could be refactored  ? * <--------------------------------------------------------------------------------------------------
+			if ( walletDto.seedPhrase !== "" && walletDto.mnemonic !== "") {
+				walletDetailVals[2] = walletDto.seedPhrase
+				walletDetailVals[3] = walletDto.mnemonic
+			}
+
+			await this.insertData(walletDetailSql, walletDetailVals)
+			await this.insertData(walletParamsSql, walletParamsVals)
+
+		} catch (e) {
+			throw await ErrorInterceptor.ServerError(`db insertion was failed at <saveUserWallet> with err\n${e}`)
+		} finally {
+			await this.closeConnection()
 		}
-		walletDetailVals.push(result[0].id)
-		walletParamsVals.push(result[0].id)
-
-		// // could be refactored  ? * <--------------------------------------------------------------------------------------------------
-		if ( walletDto.seedPhrase !== "" && walletDto.mnemonic !== "") {
-			walletDetailVals[2] = walletDto.seedPhrase
-			walletDetailVals[3] = walletDto.mnemonic
-		}
-
-		await this.insertData(walletDetailSql, walletDetailVals)
-		await this.insertData(walletParamsSql, walletParamsVals)
-
-		await this.closeConnection()
-		return this.status
 	}
 
 
-	async getWalletList(coinName: string, fromStamp: number): Promise<WALLET_LIST[] | boolean> {
+	async getWalletList(coinName: string): Promise<WALLET_LIST[]> {
 
-		let list: string = `WalletList.coinName, WalletList.address, WalletList.balance, WalletList.userId`;
-		let details: string = `WalletDetails.publicKey, WalletDetails.privateKey`;
-		let params: string = `WalletParams.isUsed, WalletParams.isChecked`;
+		let list: string = `wallet_list.coin_name, wallet_list.address, wallet_list.balance, wallet_list.user_id`;
+		let params: string = `wallet_params.is_used, wallet_params.is_checked`;
+		let walletList: WALLET_LIST[];
 
 		const sql: string = `
-			SELECT ${list}, ${details}, ${params},
-			FROM WalletList
-			INNER JOIN WalletDetails
-			ON WalletList.id = WalletDetails.walletId
-			INNER JOIN WalletParams
-			ON WalletList.id = WalletParams.walletId
-			WHERE WalletList.coinName = ?
-			AND WalletDetails.isUsed = ?
-			AND WalletParams.createdAt >= ?
+			SELECT ${list}, ${params}
+			FROM wallet_list
+			JOIN wallet_params
+			ON wallet_list.id = wallet_params.wallet_id
+			WHERE wallet_list.coin_name = ?
+			AND wallet_params.is_checked = false
+			AND wallet_params.is_used = false
+			AND wallet_params.created_at 
+			BETWEEN NOW() + INTERVAL 3 DAY 
+			AND NOW() + INTERVAL 1 DAY
 	`;
 
-		const result: WALLET_LIST[] = await this.selectData(sql,[ coinName, false, fromStamp ])
-		await this.closeConnection()
-		return result
+		try {
+			walletList = await this.selectData(sql,[coinName])
+		} catch (e) {
+			throw await ErrorInterceptor.ServerError(`db selection was failed at <getWalletList> with err\n${e}`)
+		} finally {
+			await this.closeConnection()
+		}
+
+		return walletList
 	}
 
-	async updateWalletStatus(walletId: number, isUsed: boolean, isChecked: boolean): Promise<boolean> {
+	async updateWalletStatus(walletId: number, isUsed: boolean, isChecked: boolean): Promise<void> {
 
     const sql: string = `
-      UPDATE WalletParams 
-      SET isUsed = ?, isChecked = ? 
-      WHERE walletId = ?
+      UPDATE wallet_params 
+      SET is_used=?, is_checked=? 
+      WHERE wallet_id=?
     `;
-		await this.updateData(sql,[ isUsed, isChecked, walletId ])
-		await this.closeConnection()
-		return this.status
+
+		try {
+			await this.updateData(sql,[ isUsed, isChecked, walletId ])
+		} catch (e) {
+			throw await ErrorInterceptor.ServerError(`db update was failed at <updateWalletStatus> with err\n${e}`)
+		} finally {
+			await this.closeConnection()
+		}
 	}
 
-	async updateWalletBalance(walletId: number, balance: number): Promise<boolean> {
+	async updateWalletBalance(walletId: number, balance: number): Promise<void> {
 		
 		const stamp: number = new Date().getTime()
 
@@ -191,9 +199,13 @@ export class WalletDatabaseService {
 		// `;
 		// await this.updateData(sqlBalance,[ balance, walletId ])
 
-		await this.updateData(sql,[ balance, stamp, walletId ])
-		await this.closeConnection()
-		return this.status
+		try {
+			await this.updateData(sql,[ balance, stamp, walletId ])
+		} catch (e) {
+			throw await ErrorInterceptor.ServerError(`db update was failed at <updateWalletBalance> with err\n${e}`)
+		} finally {
+			await this.closeConnection()
+		}
 	}
 
 
@@ -218,13 +230,13 @@ export class WalletDatabaseService {
 
 
   private async insertData(sqlString: string, values: any[]): Promise<void> {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			this.db.query<ResultSetHeader>(
 				sqlString, values,
 				async (err: any, result, fields?) => {
-					if(err) reject(this.status = false)
+					if(err) reject()
 					console.log("result -> ", result);
-					resolve(null)
+					resolve()
 				}
 			)
 		})
@@ -232,28 +244,28 @@ export class WalletDatabaseService {
   }
 
 	private async selectData(sqlString: string, values: any[]): Promise<any> {
-		return new Promise((resolve, reject) => {
+		return new Promise<any>((resolve, reject) => {
 			this.db.query(
 				sqlString,
 				values,
 				async (err: any, result, fields?) => {
-					if(err) reject(this.status = false)
-						console.log("result -> ", result);
-						resolve(null)
+					if(err) reject()
+					console.log("result -> ", result);
+					resolve(null)
 				}
 			)
 		})
   }
 
 	private async updateData(sqlString: string, values: any[]): Promise<void> {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
       this.db.query<ResultSetHeader>(
         sqlString,
         values,
         (err: any, result, fields?) => {
-          if(err) reject(this.status = false)
+          if(err) reject()
           console.log('result => ',result);
-          resolve(null)
+          resolve()
         }
       )
     })
@@ -271,14 +283,14 @@ export class WalletDatabaseService {
 		})
 
 		this.db.connect(async (err: mysql.QueryError | null) => {
-			if (err) return await this.notificator.sendErrorMessage("Wallet DB connection")
-			return console.log('mysql database was connected.')
+			if (err) throw await ErrorInterceptor.ServerError("wallet database connection was failed.")
+			console.log('mysql database was connected.')
 		})
 
 	}
 
 	private async closeConnection(): Promise<void> {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			resolve(this.db.destroy())
 		})
 	}

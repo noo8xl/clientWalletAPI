@@ -1,6 +1,7 @@
 
 DROP DATABASE IF EXISTS wallet;
 CREATE DATABASE IF NOT EXISTS wallet;
+USE wallet;
 
 DROP TABLE IF EXISTS wallet_details;
 DROP TABLE IF EXISTS wallet_params;
@@ -9,13 +10,14 @@ DROP TABLE IF EXISTS wallet_list;
 DROP TABLE IF EXISTS customer_details;
 DROP TABLE IF EXISTS customer_base;
 
+DROP PROCEDURE IF EXISTS update_wallet_balance;
+
 
 CREATE TABLE IF NOT EXISTS customer_base (
     id INT NOT NULL AUTO_INCREMENT,
     name varchar(30) NOT NULL,
     email varchar(250) NOT NULL,
     password varchar(30) NOT NULL,
-
 
     PRIMARY KEY (id)
 );
@@ -31,7 +33,6 @@ CREATE TABLE IF NOT EXISTS customer_details (
     FOREIGN KEY (customer_id) REFERENCES customer_base (id),
     PRIMARY KEY (id)
 );
-
 
 CREATE TABLE IF NOT EXISTS wallet_list (
     id INT NOT NULL AUTO_INCREMENT,
@@ -67,3 +68,33 @@ CREATE TABLE IF NOT EXISTS wallet_params (
     FOREIGN KEY(wallet_id) REFERENCES wallet_list (id),
     PRIMARY KEY (id)
 );
+
+DELIMITER $$
+CREATE PROCEDURE IF NOT EXISTS update_wallet_balance(
+    IN walletId INT,
+    IN newBalance FLOAT
+)
+BEGIN
+
+    UPDATE wallet_list
+        SET balance=newBalance
+        WHERE id=walletId;
+
+    UPDATE wallet_params
+        SET is_checked=true, updated_at=CURRENT_TIMESTAMP()
+        WHERE wallet_id=walletId;
+
+    COMMIT ;
+
+END $$
+DELIMITER ;
+
+CALL update_wallet_balance(1,0.332);
+
+
+CREATE VIEW get_parser_statistics AS
+    SELECT COUNT(id) AS checked_wallets
+    FROM wallet_params
+    WHERE is_checked=true
+
+# is checked count, is used count, coins found, coins sent
