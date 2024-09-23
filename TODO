@@ -1,5 +1,5 @@
 
- -> prettier exeptions class logic +++ -----------------------
+ -> prettier exception class logic +++ -----------------------
 
  -> implement different databases logic +++ ---------------------
  -> update db usage +++ ---------------------
@@ -54,3 +54,15 @@ parser :
 	-> send transactions and update balances to 0 and isUsed to true
 
 	loop ---
+
+	-> EDD design 4 parser !!*
+
+
+
+
+
+
+
+
+
+

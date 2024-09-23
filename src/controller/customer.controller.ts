@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import customerService from "../service/customer/customer.service";
 import { GET_ACTIONS_LIST } from "../types/customer/customer.types";
-import ErrorInterceptor  from "../exceptions/Error.exception";
 import {ActionLog} from "../entity/action/ActionLog";
 
 class CustomerController {
@@ -20,14 +19,13 @@ class CustomerController {
   public async getActionsLog(req: Request, res: Response, next: NextFunction): Promise<void>{
 
     let dto: GET_ACTIONS_LIST = {
-    userId: req.params.userId,
+    	userId: req.params.userId,
       skip: Number(req.params.skip),
       limit: Number(req.params.limit),
     }
 
     try {
       const result: ActionLog[] = await customerService.getActionsData(dto)
-      // if (!result) throw await ErrorInterceptor.ServerError("get Action list")
       res.status(200).json(result).end()
     } catch (e) {
       next(e)
@@ -35,8 +33,12 @@ class CustomerController {
   }
 
   public async revokeAnAccess(req: Request, res: Response, next: NextFunction): Promise<void>{
-		await customerService.revokeApiAccess(req.params.userId)
-		res.status(202).json({message: "Access to an API was revoked."}).end()
+		try {
+			await customerService.revokeApiAccess(req.params.userId)
+			res.status(202).json({message: "Access to an API was revoked."}).end()
+		} catch (e) {
+			next(e)
+		}
   }
 
 }

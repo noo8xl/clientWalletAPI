@@ -8,7 +8,7 @@ import { TheOpenNetworkService } from "../wallet/theOpenNetwork.service";
 import { CacheService } from "../cache/cache.service";
 import { SolanaService } from "../wallet/solana.service";
 import { CustomerDatabaseService } from "../database/customer.db.service";
-import { TelegramNotificationApi } from "../../api/notification.api";
+import { NotificationService } from "../notification/notification.service";
 
 import ErrorInterceptor from "../../exceptions/Error.exception";
 
@@ -21,12 +21,12 @@ import { Customer } from "../../entity/customer/Customer";
 class CryptoService {
   private wt: WALLET_TYPE;
   private cacheService: CacheService
-  private notificator: TelegramNotificationApi
+  private notificator: NotificationService
   private customerDb: CustomerDatabaseService
 
   constructor() {
     this.cacheService = new CacheService()
-    this.notificator = new TelegramNotificationApi()
+    this.notificator = new NotificationService()
     this.customerDb = new CustomerDatabaseService()
   }
 
@@ -43,17 +43,20 @@ class CryptoService {
   }
   
   // sendManualTransaction -> send manual transaction with received data in the chosen blockchain
-  public async sendManualTransaction(payload: WALLET_REQUEST_DTO): Promise<void> {
+  public async sendManualTransaction(payload: WALLET_REQUEST_DTO): Promise<string> {
+
+		let hash: string;
+
 		const msg: string = `
       You should approve <send transaction> action.
       To approve tsx -> send "Y"
       To reject tsx -> send "N"
       `;
 		let customer: Customer = await this.customerDb.findUserByFilter({id: payload.userId})
-		await this.notificator.sendInfoMessage(customer.getTelegramId(), msg)
+		await this.notificator.sendInfoTelegramMessage(customer.getTelegramId(), msg)
 		// set cache here ->
 		await this.cacheService.setManualTransactionCacheData()
-
+		return hash;
   }
 
 	// sendTransactionAutomatically -> send transaction automatically if balance was found
@@ -64,7 +67,7 @@ class CryptoService {
       To reject tsx -> send "N"
       `;
 		let customer: Customer = await this.customerDb.findUserByFilter({id: payload.userId})
-		await this.notificator.sendInfoMessage(customer.getTelegramId(), msg)
+		await this.notificator.sendInfoTelegramMessage(customer.getTelegramId(), msg)
 		// set cache here ->
 		await this.cacheService.setManualTransactionCacheData()
 

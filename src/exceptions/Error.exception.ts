@@ -1,4 +1,4 @@
-import { TelegramNotificationApi } from '../api/notification.api'
+import { NotificationService } from "../service/notification/notification.service"
 
 // ErrorInterceptor -> handle an API errors
 export default class ErrorInterceptor extends Error {
@@ -6,14 +6,14 @@ export default class ErrorInterceptor extends Error {
   message: string
   status: number  
   errors: string[]
-	static notification: TelegramNotificationApi
+	static notification: NotificationService
 
   constructor(status: number, message: string, errors: string[] = []){
     super(message)
     this.message = message
     this.status = status
     this.errors = errors
-		ErrorInterceptor.notification = new TelegramNotificationApi()
+		ErrorInterceptor.notification = new NotificationService()
   }
 
   static async PermissionDenied(action: string): Promise<ErrorInterceptor> {

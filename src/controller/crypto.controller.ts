@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import cryptoService from "../service/crypto/crypto.service";
-import { WALLET_REQUEST_DTO } from '../types/wallet/wallet.types';
-import ErrorInterceptor  from "../exceptions/Error.exception";
+import {WALLET_REQUEST_DTO} from "../dto/crypto/wallet.dto";
+
 
 // CryptoController -> handle user request 
 class CryptoController {

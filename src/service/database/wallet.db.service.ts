@@ -1,7 +1,7 @@
 
 
 import mysql, { ResultSetHeader, QueryError, RowDataPacket } from 'mysql2'
-import { TelegramNotificationApi } from '../../api/notification.api';
+import { NotificationService } from '../notification/notification.service';
 import { MYSQL_DB } from '../../config/configs';
 // import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from '../../types/database/db.response.types';
 import { WALLET, WALLET_LIST } from '../../types/wallet/wallet.types';
@@ -16,10 +16,10 @@ export class WalletDatabaseService {
 	private readonly dbPassword = MYSQL_DB.userPassword
 	private readonly dbName = MYSQL_DB.databaseName
 
-	private readonly notificator: TelegramNotificationApi
+	private readonly notificator: NotificationService
 
 	constructor() { 
-		this.notificator = new TelegramNotificationApi()
+		this.notificator = new NotificationService()
 		// this.initConnection()
 	}
 

@@ -5,6 +5,8 @@ import {CUSTOMER_PARAMS} from "../../types/customer/customer.types";
 
 export class CustomerDetails {
 
+	@IsString()
+	private apiKey: string
 	@IsNumber()
 	private telegramId: number
 	@IsEnum(FIAT_NAME)
@@ -16,9 +18,7 @@ export class CustomerDetails {
 	@IsDate()
 	private updatedAt: number
 	@IsString()
-	private apiKey: string
-	@IsString()
-	private userId: string
+	private customerId: string
 
 	constructor() {}
 
@@ -29,7 +29,7 @@ export class CustomerDetails {
 		this.isActive = params.isActive
 		this.updatedAt = params.updatedAt
 		this.createdAt = params.createdAt
-		this.userId = params.userId
+		this.customerId = params.customerId
 	}
 
 	public getTelegramId(): number {

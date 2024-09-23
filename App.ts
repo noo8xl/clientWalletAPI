@@ -5,8 +5,8 @@ import path from 'path'
 import http from 'node:http';
 import router from './src/routes/index'
 import { coinList, port, host } from './src/config/configs'
-import { TelegramNotificationApi } from './src/api/notification.api'
 import { ParserService } from './src/service/parser/parser.service'
+import {AuthTelegram} from "./src/service/telegram/auth.telegram";
 
 const app = express()
 app.use('/static/', express.static(path.join(__dirname, + './' + 'static/')))
@@ -27,8 +27,8 @@ app.use('/wallet-api', router)
 // start balance parser & notification 
 const bootstrap = async (): Promise<void> => {
   // let walletArr = []
-  const notificationBot = new TelegramNotificationApi()
-  await notificationBot.messageInterceptor()
+  const authBot = new AuthTelegram()
+  await authBot.messageInterceptor()
 
   // for (let i = 0; i <= coinList.length -1; i++) {
   //   let wt = new ParserService(coinList[i])
@@ -46,5 +46,5 @@ const bootstrap = async (): Promise<void> => {
 
 const server = http.createServer(app)
 server.listen(port, async (): Promise<void> => await bootstrap())
-server.on("error", async () => console.error("server error"))
+server.on("error", async (): Promise<void> => console.error("server error"))
 

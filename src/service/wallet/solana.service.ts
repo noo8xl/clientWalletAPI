@@ -20,7 +20,6 @@ export class SolanaService extends WalletHelper implements Wallet{
   private readonly address: string
 
   private dbService: WalletDatabaseService
-  private status: boolean = true
 
   constructor(dto: WALLET_REQUEST_DTO) {
     super(dto.coinName)
@@ -61,8 +60,7 @@ export class SolanaService extends WalletHelper implements Wallet{
       balance: 0,
     }
 
-    this.status = await this.dbService.saveUserWallet(wt);
-		if (!this.status) throw ErrorInterceptor.ExpectationFailed("method caught an error.")
+    await this.dbService.saveUserWallet(wt);
 		return wt.address
   }
 

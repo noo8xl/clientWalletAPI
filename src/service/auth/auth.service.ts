@@ -1,7 +1,7 @@
 
+import { scrypt } from "crypto"
 import { CustomerDatabaseService } from "../database/customer.db.service"
-import { Helper } from "../../helpers/helper"
-import {TelegramNotificationApi} from "../../api/notification.api";
+import {NotificationService} from "../notification/notification.service";
 
 import ErrorInterceptor  from "../../exceptions/Error.exception"
 
@@ -12,25 +12,37 @@ import { AUTH_CLIENT_DTO } from "../../dto/auth/client.dto.type"
 // AuthService -> handle new customer registration and validate api key with middleware at each request
 class AuthService {
 
-  private readonly helper: Helper
   private readonly customerDb: CustomerDatabaseService
-	private readonly notification: TelegramNotificationApi
+	private readonly notification: NotificationService
 
   constructor() {
-    this.helper = new Helper()
     this.customerDb = new CustomerDatabaseService()
-		this.notification = new TelegramNotificationApi()
+		this.notification = new NotificationService()
   }
 
   public async signUpNewClient(clientDto: AUTH_CLIENT_DTO): Promise<void> {
     const candidate: Customer = await this.customerDb.findUserByFilter({ userEmail: clientDto.userEmail })
     if (candidate) throw ErrorInterceptor.BadRequest("User already exists.")
 
-		clientDto.apiKey = await this.helper.generatePassword(64)
+		// clientDto.apiKey = await this.helper.generatePassword(64)
+
+		let clientKey: string;
+		// let binLike = Buffer.from(clientDto.toString())
+		scrypt(Buffer.from(clientDto.toString()), 'test-salt-here', 64, (err: Error, derivedKey: Buffer) => {
+			if(err) {
+				console.error('scrypt func error => ', err)
+				return
+			}
+			clientKey = derivedKey.toString("hex");
+		})
+
+
+		console.log("api key -> ", clientKey)
+		clientDto.apiKey = clientKey;
 		let msg: string = "Welcome to our wallet service! You are successfully registered."
 
     await this.customerDb.saveNewClient(clientDto)
-		await this.notification.sendInfoMessage(clientDto.telegramId, msg)
+		await this.notification.sendInfoTelegramMessage(clientDto.telegramId, msg)
   }
 
   // signInClient ->  validate user session use cache and api key 

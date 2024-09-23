@@ -1,13 +1,12 @@
 import {RATE_DATA} from "../../types/wallet/wallet.types";
 import axios from "axios";
 import ErrorInterceptor from "../../exceptions/Error.exception";
-import {Helper} from "../../helpers/helper";
+import {availableCoins} from "../../config/configs";
 
 
 export class WalletHelper {
 
 	readonly coinName: string
-	private readonly helper: Helper = new Helper()
 
 	protected constructor(coinName: string) {
 		this.coinName = coinName;
@@ -15,7 +14,7 @@ export class WalletHelper {
 
 	protected async getRate(fiatName: string, balance: number): Promise<RATE_DATA> {
 		let rateData: RATE_DATA;
-		const coinNameForUrl: string = await this.helper.getCoinApiName(this.coinName)
+		const coinNameForUrl: string = await this.getCoinApiName(this.coinName)
 		const getRateUrl: string = `https://api.coingecko.com/api/v3/simple/price?ids=${coinNameForUrl}&vs_currencies=${fiatName}`
 
 		const data = await axios(getRateUrl)
@@ -33,5 +32,16 @@ export class WalletHelper {
 		return rateData
 	}
 
+
 	protected async send(): Promise<void> {}
+
+
+	private async getCoinApiName(coin: string): Promise<string> {
+		for (let i = 0; i <= availableCoins.length - 1; i++) {
+			console.log('iter => ', availableCoins[i]);
+			if (coin === availableCoins[i].coinName)
+				return availableCoins[i].coinApiName
+		}
+	}
+
 }

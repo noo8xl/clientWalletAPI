@@ -10,7 +10,7 @@ import axios from 'axios';
 import { WalletDatabaseService } from "../database/wallet.db.service"
 import ErrorInterceptor from "../../exceptions/Error.exception";
 import {WalletHelper} from "./walletHelper";
-import {TelegramNotificationApi} from "../../api/notification.api";
+import {CustomerDatabaseService} from "../database/customer.db.service";
 
 // BitcoinService -> implements btc blockchain manipulation
 export class BitcoinService extends WalletHelper implements Wallet {
@@ -18,16 +18,18 @@ export class BitcoinService extends WalletHelper implements Wallet {
   readonly coinName: string
   private readonly userId: string
   private readonly address: string
-  private dbService: WalletDatabaseService
-	private readonly notification: TelegramNotificationApi;
+
+  private readonly dbService: WalletDatabaseService
+	private readonly customerDb: CustomerDatabaseService
 
   constructor(dto: WALLET_REQUEST_DTO) {
 		super(dto.coinName)
+
     this.userId = dto.userId
     this.coinName = dto.coinName
     this.address = dto.address
 		this.dbService = new WalletDatabaseService()
-		this.notification = new TelegramNotificationApi()
+		this.customerDb = new CustomerDatabaseService()
   }
 
 
@@ -81,11 +83,8 @@ export class BitcoinService extends WalletHelper implements Wallet {
     //   - btc obj: ${wt},
     // `);
 
-		try {
-			await this.dbService.saveUserWallet(wt)
-		} catch (e) {
-			throw ErrorInterceptor.ExpectationFailed("Create wallet caught an error.")
-		}
+
+		await this.dbService.saveUserWallet(wt)
     return wt.address
   }
 

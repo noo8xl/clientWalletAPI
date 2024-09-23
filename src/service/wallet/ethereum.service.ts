@@ -17,7 +17,6 @@ export class EthereumService extends WalletHelper implements Wallet {
   private readonly address: string
 
   private readonly dbService: WalletDatabaseService
-  private status: boolean = true
 
   constructor(dto: WALLET_REQUEST_DTO) {
 		super(dto.coinName)
@@ -48,8 +47,7 @@ export class EthereumService extends WalletHelper implements Wallet {
       balance: 0,
     }
 
-		this.status = await this.dbService.saveUserWallet(wt);
-		if (!this.status) throw ErrorInterceptor.ExpectationFailed("Wallet saving was failed.")
+		await this.dbService.saveUserWallet(wt);
 		return wt.address
   }
 
