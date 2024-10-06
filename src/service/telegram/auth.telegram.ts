@@ -44,10 +44,11 @@ export class AuthTelegram extends TelegramHelper {
 							await bot.sendMessage(chatId, `Transaction will be approved.`)
 							return
 						default:
+							await bot.sendMessage(chatId, `Unknown user input.`)
 							// isValid = await this.customerDatabaseService.validateTwoStepCode(message)
-							!isValid
-								? await bot.sendMessage(chatId, `Transaction will be rejected.`)
-								: await bot.sendMessage(chatId, `Transaction will be rejected.`)
+							// !isValid
+							// 	? await bot.sendMessage(chatId, `Transaction will be rejected.`)
+							// 	: await bot.sendMessage(chatId, `Transaction will be rejected.`)
 					}
 				}
 

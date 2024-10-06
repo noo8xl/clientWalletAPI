@@ -38,7 +38,6 @@ export class ParserService {
   // getWalletBalances -> get balances, update wallet statuses, and push balances in <this.balances> array
   async getWalletBalances(): Promise<void> {
 
-
     balanceSeeker: for (let i = 0; i <= this.wtList.length -1; i++) {
       let balance: number = await cryptoService.getBalance({coinName: this.wtList[i].coinName, address: this.wtList[i].address})
       if(balance < 0)

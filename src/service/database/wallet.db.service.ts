@@ -251,7 +251,7 @@ export class WalletDatabaseService {
 				async (err: any, result, fields?) => {
 					if(err) reject()
 					console.log("result -> ", result);
-					resolve(null)
+					resolve(result)
 				}
 			)
 		})
