@@ -20,9 +20,9 @@ import { Customer } from "../../entity/customer/Customer";
 // CryptoService -> CRUD interaction with different blockchains 
 class CryptoService {
   private wt: WALLET_TYPE;
-  private cacheService: CacheService
-  private notificator: NotificationService
-  private customerDb: CustomerDatabaseService
+  private readonly cacheService: CacheService
+  private readonly notificator: NotificationService
+  private readonly customerDb: CustomerDatabaseService
 
   constructor() {
     this.cacheService = new CacheService()
@@ -61,16 +61,12 @@ class CryptoService {
 
 	// sendTransactionAutomatically -> send transaction automatically if balance was found
 	public async sendTransactionAutomatically(payload: WALLET_REQUEST_DTO): Promise<void> {
-		const msg: string = `
-      You should approve <send transaction> action.
-      To approve tsx -> send "Y"
-      To reject tsx -> send "N"
-      `;
-		let customer: Customer = await this.customerDb.findUserByFilter({id: payload.userId})
-		await this.notificator.sendInfoTelegramMessage(customer.getTelegramId(), msg)
-		// set cache here ->
-		await this.cacheService.setManualTransactionCacheData()
+    const chatId = 0 //  await this.customerDb.getCustomerChatId()
+    const msg = "";
 
+    await this.setWalletInstance(payload)
+		await this.wt.sendTransaction()
+    await this.notificator.sendInfoTelegramMessage(chatId, msg)
 	}
 
 	public async approveTransaction(): Promise<string> {

@@ -128,12 +128,10 @@ export class WalletDatabaseService {
 
 	async getWalletList(coinName: string): Promise<WALLET_LIST[]> {
 
-		let list: string = `wallet_list.coin_name, wallet_list.address, wallet_list.balance, wallet_list.user_id`;
-		let params: string = `wallet_params.is_used, wallet_params.is_checked`;
 		let walletList: WALLET_LIST[];
 
-		const sql: string = `
-			SELECT ${list}, ${params}
+		const sql = `
+			SELECT wallet_list.id, wallet_list.coin_name, wallet_list.address, wallet_list.customer_id
 			FROM wallet_list
 			JOIN wallet_params
 			ON wallet_list.id = wallet_params.wallet_id
@@ -141,9 +139,9 @@ export class WalletDatabaseService {
 			AND wallet_params.is_checked = false
 			AND wallet_params.is_used = false
 			AND wallet_params.created_at 
-			BETWEEN NOW() + INTERVAL 3 DAY 
-			AND NOW() + INTERVAL 1 DAY
-	`;
+			BETWEEN NOW() - INTERVAL 3 DAY 
+			AND NOW()
+		`;
 
 		try {
 			walletList = await this.selectData(sql,[coinName])
@@ -156,15 +154,22 @@ export class WalletDatabaseService {
 		return walletList
 	}
 
-	async updateWalletStatus(walletId: number, isUsed: boolean, isChecked: boolean): Promise<void> {
+	async updateWalletStatus(walletId: number, balance: number, isChecked: boolean, isUsed: boolean): Promise<void> {
 
-    const sql: string = `
+		const balSql = `
+			UPDATE wallet_list
+			SET balance = ? 
+			WHERE id = ?
+		`;
+
+		const sql = `
       UPDATE wallet_params 
       SET is_used=?, is_checked=? 
       WHERE wallet_id=?
     `;
 
 		try {
+			await this.updateData(balSql,[ balSql, walletId ])
 			await this.updateData(sql,[ isUsed, isChecked, walletId ])
 		} catch (e) {
 			throw await ErrorInterceptor.ServerError(`db update was failed at <updateWalletStatus> with err\n${e}`)
@@ -187,19 +192,20 @@ export class WalletDatabaseService {
 			WHERE WalletParams.walletId = ?
 		`;
 
-    // const sqlBalance: string = `
-    //   UPDATE WalletList 
-    //   SET balance = ? 
-    //   WHERE walletId = ?
-    // `;
-		// const sqlParams: string = `
-		// 	UPDATE WalletParams
-		// 	SET updatedAt = ? 
-		// 	WHERE id = ?
-		// `;
-		// await this.updateData(sqlBalance,[ balance, walletId ])
+		const balSql = `
+		UPDATE wallet_list
+		SET balance = ? 
+		WHERE id = ?
+		`;
+
+		const sql = `
+			UPDATE wallet_params 
+			SET is_used=?, is_checked=? 
+			WHERE wallet_id=?
+		`;
 
 		try {
+			// await this.updateData(balSql,[ balance, walletId ])
 			await this.updateData(sql,[ balance, stamp, walletId ])
 		} catch (e) {
 			throw await ErrorInterceptor.ServerError(`db update was failed at <updateWalletBalance> with err\n${e}`)
@@ -249,7 +255,7 @@ export class WalletDatabaseService {
 				sqlString,
 				values,
 				async (err: any, result, fields?) => {
-					if(err) reject()
+					if(err) reject(err)
 					console.log("result -> ", result);
 					resolve(result)
 				}
@@ -263,7 +269,7 @@ export class WalletDatabaseService {
         sqlString,
         values,
         (err: any, result, fields?) => {
-          if(err) reject()
+          if(err) reject(err)
           console.log('result => ',result);
           resolve()
         }

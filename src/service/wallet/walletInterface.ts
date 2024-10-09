@@ -11,7 +11,7 @@ export interface Wallet {
 	// get balance of the wallet
   getBalance(): Promise<number>;
 	// send p2p transaction
-  sendTransaction(): Promise<string>;
+  sendTransaction(): Promise<string>; // -> get list of wallets by coinName -> pay it 
 	// get transaction details
   getTransactionInfo(): Promise<any>;
 
