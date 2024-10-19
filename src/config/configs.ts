@@ -89,7 +89,7 @@ export const availableCoins = [
   { coinName: 'btc', coinApiName: 'bitcoin' },
   { coinName: 'eth', coinApiName: 'ethereum' },
   { coinName: 'trx', coinApiName: 'tron' },
-  { coinName: 'ton', mainAddress: 'the-open-network' },
+  { coinName: 'ton', coinApiName: 'the-open-network' },
   { coinName: 'sol', coinApiName: 'solana' },
   // { coinName: 'bch', coinApiName: 'bitcoin-cash' },
   // { coinName: 'usdt', coinApiName: 'tether' },

@@ -6,7 +6,6 @@ import customerController from '../controller/customer.controller';
 
 const router = express.Router()
 
-
 // ################## auth area ##################
 
 // sign a new customer to have access to the API

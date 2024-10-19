@@ -3,7 +3,6 @@
 import mysql, { ResultSetHeader, QueryError, RowDataPacket } from 'mysql2'
 import { NotificationService } from '../notification/notification.service';
 import { MYSQL_DB } from '../../config/configs';
-// import { DB_INSERT_RESPONSE, DB_SELECT_RESPONSE } from '../../types/database/db.response.types';
 import { WALLET, WALLET_LIST } from '../../types/wallet/wallet.types';
 import ErrorInterceptor from '../../exceptions/Error.exception';
 
@@ -192,17 +191,17 @@ export class WalletDatabaseService {
 			WHERE WalletParams.walletId = ?
 		`;
 
-		const balSql = `
-		UPDATE wallet_list
-		SET balance = ? 
-		WHERE id = ?
-		`;
+		// const balSql = `
+		// UPDATE wallet_list
+		// SET balance = ? 
+		// WHERE id = ?
+		// `;
 
-		const sql = `
-			UPDATE wallet_params 
-			SET is_used=?, is_checked=? 
-			WHERE wallet_id=?
-		`;
+		// const sql = `
+		// 	UPDATE wallet_params 
+		// 	SET is_used=?, is_checked=? 
+		// 	WHERE wallet_id=?
+		// `;
 
 		try {
 			// await this.updateData(balSql,[ balance, walletId ])
