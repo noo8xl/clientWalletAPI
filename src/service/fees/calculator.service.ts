@@ -1,39 +1,39 @@
 
 
-export class Fee {
-  coinName: string
+// export class Fee {
+//   coinName: string
 
-  constructor(coinName: string) {this.coinName = coinName }
+//   constructor(coinName: string) {this.coinName = coinName }
 
-  public async calculateNetworkFee(): Promise<number> {
+//   public async calculateNetworkFee(): Promise<number> {
     
-    return this.calc()
-  };
+//     return this.calc()
+//   };
 
-  // ####################################################################
+//   // ####################################################################
   
 
-  private async calc(): Promise<number> { 
-    switch (this.coinName) {
-      case "btc":
+//   private async calc(): Promise<number> { 
+//     switch (this.coinName) {
+//       case "btc":
         
-      break;
-      case "eth":
+//       break;
+//       case "eth":
       
-      break;
-      case "trx":
+//       break;
+//       case "trx":
       
-      break;
-      case "ton":
+//       break;
+//       case "ton":
       
-      break;
-      case "sol":
+//       break;
+//       case "sol":
       
-      break;
+//       break;
     
-      default:
-        return 0
-    }
-  }
+//       default:
+//         return 0
+//     }
+//   }
 
-}
+// }

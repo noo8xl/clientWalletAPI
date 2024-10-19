@@ -40,4 +40,8 @@ export class CustomerDetails {
 		return this;
 	}
 
+	public getFiatName() {
+		return this.fiatName;
+	}
+
 }

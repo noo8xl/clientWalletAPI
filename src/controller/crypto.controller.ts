@@ -13,13 +13,12 @@ class CryptoController {
 		}
 
 		try {
-			const result: string = await cryptoService.generateOneTimeAddressByCoinName(dto)
-			res.status(201).json({coinName: dto.coinName, address: result}).end()
+			const address: string = await cryptoService.generateOneTimeAddressByCoinName(dto)
+			res.status(201).json({address}).end()
 		} catch (e) {
 			next(e)
 		}
 	}
-
 
 	async getBalance(req: Request, res: Response, next: NextFunction): Promise<void> {
 		const dto: WALLET_REQUEST_DTO = {
@@ -29,8 +28,8 @@ class CryptoController {
 		}
 
 		try {
-			const result: number = await cryptoService.getBalance(dto)
-			res.status(200).json({coinName: dto.coinName, balance: result}).end()
+			const balance: number = await cryptoService.getBalance(dto)
+			res.status(200).json({balance}).end()
 		} catch (e) {
 			next(e)
 		}
@@ -47,18 +46,11 @@ class CryptoController {
 			const result: string = await cryptoService.sendManualTransaction(dto)
 			// if(typeof result === null) throw await ErrorInterceptor.ExpectationFailed("You should approve this action.")
 			// if (!result) throw await ErrorInterceptor.BadRequest(`Can't send transaction in unknown ${dto.coinName} network or unavailable coin.`)
-			res.status(200).json({coinName: dto.coinName, transactionDetails: result}).end()
+			res.status(200).json({transactionDetails: result}).end()
 		} catch (e) {
 			next(e)
 		}
 	}
-	
-
-	// ============================================================================================================= //
-  // ================================== private methods for internal usage only ================================ //
-  // ============================================================================================================= //
-
-
 
 }
 

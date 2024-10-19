@@ -9,7 +9,7 @@ import { Wallet } from './walletInterface'
 
 import { WalletDatabaseService } from "../database/wallet.db.service"
 import ErrorInterceptor from "../../exceptions/Error.exception";
-import {WalletHelper} from "./walletHelper";
+import {WalletHelper} from "./cmdExecutor";
 
 
 export class SolanaService extends WalletHelper implements Wallet{

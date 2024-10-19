@@ -5,7 +5,7 @@ import path from 'path'
 import http from 'node:http';
 import router from './src/routes/index'
 import { coinList, port, host } from './src/config/configs'
-import { ParserService } from './src/service/parser/parser.service'
+// import { ParserService } from './src/service/parser/parser.service'
 import {AuthTelegram} from "./src/service/telegram/auth.telegram";
 
 const app = express()
@@ -45,6 +45,8 @@ const bootstrap = async (): Promise<void> => {
 }
 
 const server = http.createServer(app)
-server.listen(port, async (): Promise<void> => await bootstrap())
+server.listen(port)
+
+server.on('listening', async (): Promise<void> => await bootstrap())
 server.on("error", async (): Promise<void> => console.error("server error"))
 

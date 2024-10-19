@@ -38,6 +38,12 @@ export class Customer {
 		this.customerDetails = customerDetails
 	}
 
+
+	public getFiatName() {
+		return this.customerDetails.getFiatName();
+	}
+
+
 	public getCustomer(): Customer {
 		return this;
 	}

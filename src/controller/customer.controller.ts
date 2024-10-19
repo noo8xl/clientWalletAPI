@@ -35,7 +35,7 @@ class CustomerController {
   public async revokeAnAccess(req: Request, res: Response, next: NextFunction): Promise<void>{
 		try {
 			await customerService.revokeApiAccess(req.params.userId)
-			res.status(202).json({message: "Access to an API was revoked."}).end()
+			res.status(202).json({message: "Access is revoked."}).end()
 		} catch (e) {
 			next(e)
 		}

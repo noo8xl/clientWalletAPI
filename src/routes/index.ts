@@ -40,7 +40,7 @@ router.put(
 // generate a single address by coinName for cur userId
 router.get(
 	'/wallet/generate/:coinName/:userId/',
-	validateAccessKey,
+	// validateAccessKey,
 	cryptoController.generateWalletAddress)
 
 // get balance data by coinName & address
@@ -56,13 +56,6 @@ router.post(
 	validateAccessKey,
 	cryptoController.sendManualTransaction)
 
-
-// // check address for isValid
-// router.get(
-	// 	'/wallet/check_address/:coinName/:address/',
-// 	cryptoController.checkAddress)
-
-	
 	
 // get test connection between api's ------------
 // router.get(

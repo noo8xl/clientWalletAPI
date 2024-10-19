@@ -22,7 +22,6 @@ export type WALLET_KEYS = {
 }
 
 
-
 type BITCOIN_WALLET = {
   userId: string
   coinName: string

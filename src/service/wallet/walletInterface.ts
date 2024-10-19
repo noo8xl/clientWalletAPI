@@ -15,8 +15,5 @@ export interface Wallet {
 	// get transaction details
   getTransactionInfo(): Promise<any>;
 
-	// get rate data
-  getRate(): Promise<RATE_DATA>;
-
 }
 

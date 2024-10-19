@@ -26,15 +26,14 @@ export class CustomerDatabaseService {
   private readonly customerModel = CustomerModel
 	private readonly customerParamsModel = CustomerParamsModel
 
-  constructor() { }
+  constructor() {}
 
 	public async getCustomerId(filter: any): Promise<string> {
-		let customerId: string;
 
 		try {
 			await this.initConnection()
 			const response: CUSTOMER = await this.customerModel.findOne<CUSTOMER>(filter)
-			customerId = response._id.toString();
+			return response._id.toString();
 
 		} catch (e: unknown) {
 			throw await ErrorInterceptor
@@ -42,8 +41,6 @@ export class CustomerDatabaseService {
 		} finally {
 			await this.disconnectClient()
 		}
-
-		return customerId
 	}
 
   // findUserByFilter -> find user data by dto object filter ex => {userId: '123', userEmail: 'ex@mail.net'}
@@ -60,6 +57,8 @@ export class CustomerDatabaseService {
 			customer.setCustomer(candidate)
 			customerDetails.setCustomerDetails(params)
 			customer.setCustomerDetails(customerDetails)
+			
+			return customer.getCustomer()
 
     } catch (e: unknown) {
 			throw await ErrorInterceptor
@@ -68,7 +67,7 @@ export class CustomerDatabaseService {
 			await this.disconnectClient()
 		}
 
-		return customer.getCustomer()
+
   }
 
 
