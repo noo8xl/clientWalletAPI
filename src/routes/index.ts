@@ -46,14 +46,14 @@ router.get(
 // get balance data by coinName & address
 router.get(
 	'/wallet/get-balance/:coinName/:address/',
-	validateAccessKey,
+	// validateAccessKey,
 	cryptoController.getBalance
 	)
 	
 // send manual transaction
 router.post(
 	'/wallet/send_transaction/:coinName/:fromAddress/:toAddress/',
-	validateAccessKey,
+	// validateAccessKey,
 	cryptoController.sendManualTransaction)
 
 	

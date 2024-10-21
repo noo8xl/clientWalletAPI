@@ -24,23 +24,12 @@ app.disable('x-powered-by')
 // routers
 app.use('/wallet-api', router)
 
-// start balance parser & notification 
+// start some services & notification 
 const bootstrap = async (): Promise<void> => {
   // let walletArr = []
   const authBot = new AuthTelegram()
   await authBot.messageInterceptor()
 
-  // for (let i = 0; i <= coinList.length -1; i++) {
-  //   let wt = new ParserService(coinList[i])
-  //   wt.setParams()
-  //   wt.getWalletListByParams()
-  //   wt.getWalletBalances()
-  //   walletArr.push(wt)
-  // }
-  // console.log('wt array len -> ', walletArr.length);
-  // console.log("wt arr items -> ", walletArr);
-  
-  
   console.log(`Server is running on http://${host}:${port}/`)
 }
 

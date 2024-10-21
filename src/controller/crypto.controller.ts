@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 import cryptoService from "../service/crypto/crypto.service";
-import {WALLET_REQUEST_DTO} from "../dto/crypto/wallet.dto";
+import {GET_BALANCE_DTO, GET_WALLET_DETAILS_DTO, WALLET_REQUEST_DTO} from "../dto/crypto/wallet.dto";
 
 
 // CryptoController -> handle user request 
 class CryptoController {
 
 	async generateWalletAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
+		
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
 			coinName: req.params.coinName.toLowerCase().replace('-', '/')
@@ -21,6 +22,7 @@ class CryptoController {
 	}
 
 	async getBalance(req: Request, res: Response, next: NextFunction): Promise<void> {
+
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
 			coinName: req.params.coinName.toLowerCase().replace('-', '/'),
@@ -28,8 +30,8 @@ class CryptoController {
 		}
 
 		try {
-			const balance: number = await cryptoService.getBalance(dto)
-			res.status(200).json({balance}).end()
+			const balance: GET_BALANCE_DTO = await cryptoService.getBalance(dto)
+			res.status(200).json(balance).end()
 		} catch (e) {
 			next(e)
 		}

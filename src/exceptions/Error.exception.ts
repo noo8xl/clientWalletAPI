@@ -22,7 +22,8 @@ export default class ErrorInterceptor extends Error {
   }
 
 	static async ServerError(action: string): Promise<ErrorInterceptor> {
-		await this.notification.sendErrorMessage(`${action} was failed.`)
+		// await this.notification.sendErrorMessage(`${action} was failed.`)
+    console.log("err msg is -> ", action);
 		return new ErrorInterceptor(500, "Internal server error.")
 	}
 
@@ -39,6 +40,7 @@ export default class ErrorInterceptor extends Error {
   }
 
   static ExpectationFailed(msg?: string): ErrorInterceptor {
+    console.log("err msg is -> ", msg);
     return new ErrorInterceptor(417, !msg ? "Expectation failed." : msg)
   }
 
