@@ -1,10 +1,8 @@
 import TelegramBot from "node-telegram-bot-api";
 import {CustomerDatabaseService} from "../database/customer.db.service";
 import {CacheService} from "../cache/cache.service";
-import {Customer} from "../../entity/customer/Customer";
 import {NOTIFICATION_BOT_TOKEN} from "../../config/configs";
 import {TelegramHelper} from "./helper.telegram";
-
 
 export class AuthTelegram extends TelegramHelper {
 
@@ -26,8 +24,8 @@ export class AuthTelegram extends TelegramHelper {
 		bot.on("message", async (msg) => {
 			if(msg.text !== "/start" && msg.text !== "/id") {
 				let chatId: number = msg.chat.id
-				let customer: Customer = await customerDatabaseService.findUserByFilter({telegramId: chatId})
-				if (!customer) {
+				let customerId: string = await customerDatabaseService.getCustomerIdByTelegramChatId(chatId)
+				if (!customerId) {
 					await bot.sendMessage(chatId, `You are unknown person.`)
 					return
 				} else {
@@ -39,16 +37,16 @@ export class AuthTelegram extends TelegramHelper {
 							await bot.sendMessage(chatId, `Transaction will be rejected.`)
 							return
 						case "y":
-							await cacheService.clearCachedDataByKey(customer.getId())
-							await cacheService.setCachedData({userId: customer.getId(), isApprove: true})
+							await cacheService.clearCachedDataByKey(customerId)
+							// await cacheService.setCachedData({userId: customer.getId(), isApprove: true})
 							await bot.sendMessage(chatId, `Transaction will be approved.`)
 							return
 						default:
 							await bot.sendMessage(chatId, `Unknown user input.`)
 							// isValid = await this.customerDatabaseService.validateTwoStepCode(message)
 							// !isValid
-							// 	? await bot.sendMessage(chatId, `Transaction will be rejected.`)
-							// 	: await bot.sendMessage(chatId, `Transaction will be rejected.`)
+							// 	? await bot.sendMessage(chatId, `Transaction has been rejected.`)
+							// 	: await bot.sendMessage(chatId, `Transaction has been approved.`)
 					}
 				}
 

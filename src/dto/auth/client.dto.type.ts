@@ -7,3 +7,5 @@ export type AUTH_CLIENT_DTO = {
 	apiKey?: string
   telegramId?: number
 }
+
+export type AUTH_RESPONSE_DTO = {}

@@ -6,18 +6,15 @@ import {MONGO_DB} from "../../config/configs"
 import ErrorInterceptor from "../../exceptions/Error.exception";
 
 import {ACTION} from "../../types/action/Action.types";
-import {GET_ACTIONS_LIST} from "../../types/customer/customer.types";
+import {GET_ACTIONS_LIST} from "../../types/action/Action.types";
 import {CUSTOMER} from "../../types/customer/customer.types";
 import {CUSTOMER_PARAMS} from "../../types/customer/customer.types";
 import {AUTH_CLIENT_DTO} from "../../dto/auth/client.dto.type";
 
-import {Customer} from "../../entity/customer/Customer";
-import {CustomerDetails} from "../../entity/customer/CustomerDetails";
-import {ActionLog} from "../../entity/action/ActionLog";
-
 import CustomerParamsModel from "../../models/CustomerParams.model";
 import ActionModel from "../../models/Action.model";
 import CustomerModel from "../../models/Customer.model";
+import { FIAT_NAME } from "src/types/wallet/wallet.types";
 
 
 
@@ -28,11 +25,11 @@ export class CustomerDatabaseService {
 
   constructor() {}
 
-	public async getCustomerId(filter: any): Promise<string> {
+	public async getCustomerId(userEmail: string): Promise<string> {
 
 		try {
 			await this.initConnection()
-			const response: CUSTOMER = await this.customerModel.findOne<CUSTOMER>(filter)
+			const response: CUSTOMER = await this.customerModel.findOne<CUSTOMER>({userEmail})
 			return response._id.toString();
 
 		} catch (e: unknown) {
@@ -43,32 +40,53 @@ export class CustomerDatabaseService {
 		}
 	}
 
-  // findUserByFilter -> find user data by dto object filter ex => {userId: '123', userEmail: 'ex@mail.net'}
-  public async findUserByFilter(filter: any): Promise<Customer>{
-
-		let customer: Customer = new Customer()
-		let customerDetails: CustomerDetails = new CustomerDetails()
+	public async getCustomerChatId(customerId: string): Promise<number> {
 
     try {
 			await this.initConnection()
-      const candidate: CUSTOMER = await this.customerModel.findOne<CUSTOMER>(filter)
-			const params: CUSTOMER_PARAMS = await this.customerParamsModel.findOne<CUSTOMER_PARAMS>({userId: filter?.userId})
-
-			customer.setCustomer(candidate)
-			customerDetails.setCustomerDetails(params)
-			customer.setCustomerDetails(customerDetails)
+			return await this.customerParamsModel.findOne<number>({customerId}, {projection: {telegramId: 1}})
 			
-			return customer.getCustomer()
-
     } catch (e: unknown) {
 			throw await ErrorInterceptor
-				.ServerError(`customer db server was failed at <findUserByFilter> with err ${e}`)
+				.ServerError(`customer db server was failed at <getCustomerChatId> with err ${e}`)
     } finally {
 			await this.disconnectClient()
 		}
 
+	}
 
-  }
+	public async getCustomerIdByTelegramChatId(chatId: number): Promise<string> {
+
+    try {
+			await this.initConnection()
+			return (await this.customerParamsModel.findOne<number>({telegramId: chatId}, {projection: {customerId: 1}})).toString()
+			
+    } catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`customer db server was failed at <getCustomerIdByTelegramChatId> with err ${e}`)
+    } finally {
+			await this.disconnectClient()
+		}
+
+	}
+
+	
+
+	public async getFiatName(customerId: string): Promise<string> {
+		
+		try {
+			await this.initConnection()
+			return (await this.customerParamsModel.findOne<FIAT_NAME>({customerId}, {projection: {fiatName: 1}})).toString()
+			
+    } catch (e: unknown) {
+			throw await ErrorInterceptor
+				.ServerError(`customer db server was failed at <getFiatName> with err ${e}`)
+    } finally {
+			await this.disconnectClient()
+		}
+
+	}
+
 
 
   // saveNewClient -> save new user with default params
@@ -138,32 +156,23 @@ export class CustomerDatabaseService {
   }
 
   // getActionHistory -> get user action history
-  public async getActionHistory(userDto: GET_ACTIONS_LIST): Promise<ActionLog[]> {
-
-		let logList: ActionLog[] = [];
-		let actionItem: ActionLog = new ActionLog();
+  public async getActionHistory(userDto: GET_ACTIONS_LIST): Promise<ACTION[]> {
 
 		try {
 			await this.initConnection()
-			let list: ACTION[] = await this.actionsModel
+			let logList: ACTION[] = await this.actionsModel
 				.find<ACTION>({ customerId: userDto.userId })
 				.skip(userDto.skip)
 				.limit(userDto.limit)
 				.exec()
 
-			for (let i = 0; i <= list.length -1; i++) {
-				actionItem.setAction(list[i])
-				logList.push(actionItem.getAction())
-			}
-
+			return logList
 		} catch (e: unknown) {
 			throw await ErrorInterceptor
 				.ServerError(`customer db server was failed at <getActionHistory> with err ${e}`)
 		} finally {
 			await this.disconnectClient()
 		}
-
-		return logList
 	}
 
   // saveUserLogsData -> save customer actions log to db

@@ -18,5 +18,8 @@ export type GET_BALANCE_DTO = {
 export type GET_WALLET_DETAILS_DTO = {
 	walletId: number
 	createdAt: number
-	
 }
+
+// export type WALLET_LIST = {
+
+// }

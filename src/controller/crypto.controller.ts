@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 import cryptoService from "../service/crypto/crypto.service";
-import {GET_BALANCE_DTO, GET_WALLET_DETAILS_DTO, WALLET_REQUEST_DTO} from "../dto/crypto/wallet.dto";
+import {GET_BALANCE_DTO, WALLET_REQUEST_DTO} from "../dto/crypto/wallet.dto";
 
 
 // CryptoController -> handle user request 
 class CryptoController {
 
 	async generateWalletAddress(req: Request, res: Response, next: NextFunction): Promise<void> {
-		
+
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
 			coinName: req.params.coinName.toLowerCase().replace('-', '/')
@@ -20,6 +20,22 @@ class CryptoController {
 			next(e)
 		}
 	}
+
+	async createWallet(req: Request, res: Response, next: NextFunction): Promise<void> {
+		
+		const dto: WALLET_REQUEST_DTO = {
+			userId: req.params.userId,
+			coinName: req.params.coinName.toLowerCase().replace('-', '/')
+		}
+
+		try {
+			const walletList: any = await cryptoService.createWallet(dto)
+			res.status(201).json(walletList).end()
+		} catch (e) {
+			next(e)
+		}
+	}
+
 
 	async getBalance(req: Request, res: Response, next: NextFunction): Promise<void> {
 
@@ -38,6 +54,17 @@ class CryptoController {
 	}
 	
 	async sendManualTransaction(req: Request, res: Response, next: NextFunction): Promise<void> {
+
+		try {
+			await cryptoService.sendManualTransaction(req.body)
+			res.status(204).json({message: "You should approve this action via telegram."}).end()
+		} catch (e) {
+			next(e)
+		}
+	}
+
+	async sendAutoTransaction(req: Request, res: Response, next: NextFunction): Promise<void> {
+
 		const dto: WALLET_REQUEST_DTO = {
 			userId: req.params.userId,
 			coinName: req.params.coinName.toLowerCase().replace('-', '/'),
@@ -45,10 +72,8 @@ class CryptoController {
 		}
 
 		try {
-			const result: string = await cryptoService.sendManualTransaction(dto)
-			// if(typeof result === null) throw await ErrorInterceptor.ExpectationFailed("You should approve this action.")
-			// if (!result) throw await ErrorInterceptor.BadRequest(`Can't send transaction in unknown ${dto.coinName} network or unavailable coin.`)
-			res.status(200).json({transactionDetails: result}).end()
+			const hash: string = await cryptoService.sendTransactionAutomatically(dto)
+			res.status(200).json({transactionDetails: hash}).end()
 		} catch (e) {
 			next(e)
 		}

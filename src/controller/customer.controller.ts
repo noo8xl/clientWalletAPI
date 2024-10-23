@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import customerService from "../service/customer/customer.service";
-import { GET_ACTIONS_LIST } from "../types/customer/customer.types";
-import {ActionLog} from "../entity/action/ActionLog";
+import { ACTION, GET_ACTIONS_LIST } from "../types/action/Action.types";
 
 class CustomerController {
 
@@ -25,7 +24,7 @@ class CustomerController {
     }
 
     try {
-      const result: ActionLog[] = await customerService.getActionsData(dto)
+      const result: ACTION[] = await customerService.getActionsData(dto)
       res.status(200).json(result).end()
     } catch (e) {
       next(e)

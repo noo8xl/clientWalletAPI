@@ -6,10 +6,7 @@ export async function validateAccessKey(req: Request, res: Response, next: NextF
   
   const key: string = req.headers.accesskey.toString()
   if (!key) {
-    res
-			.status(403)
-			.json({message: 'missing accesses headers'})
-			.end()
+    res.status(403).json({message: 'missing accesses headers'}).end()
     return
   }
 

@@ -1,4 +1,4 @@
-import { WALLET_REQUEST_DTO } from "src/dto/crypto/wallet.dto"
+import { GET_BALANCE_DTO, WALLET_REQUEST_DTO } from "src/dto/crypto/wallet.dto"
 import { CustomerDatabaseService } from "../database/customer.db.service"
 import { CmdExecutor } from "./cmdExecutor"
 
@@ -18,27 +18,29 @@ export class WalletService extends CmdExecutor {
     this.userId = dto.userId
     this.coinName = dto.coinName
     this.address = dto.address
+    
 		this.customerDb = new CustomerDatabaseService()
   }
 
-
-  // generate new wallet 
-  public async createWallet(): Promise<string> {
+  // generate a new address for one time use
+  public async createOneTimeAddress(): Promise<string> {
     return await this.createAddressCmd( ['gwlt', this.coinName, this.userId] )
   }
 
-  // get wallet balance
-  public async getBalance(): Promise<any> {
-    // const customer: Customer = await this.customerDb.findUserByFilter({_id: this.userId})
-    // let fiatName: string = customer.getFiatName().toString()
+  // generate a new permanent wallet 
+  public async createWallet(): Promise<any> {
+    return await this.createAddressCmd( ['gwlt', "create", this.userId] )
+  }
 
-    let fiatName: string = 'usd' // placeholder
+  // get wallet balance
+  public async getBalance(): Promise<GET_BALANCE_DTO> {
+    const fiatName: string = await this.customerDb.getFiatName(this.userId)
     return await this.getBalanceCmd( ["gb", this.coinName, this.address, fiatName] )
   }
 
   // send transaction from - to  (amount)
   public async sendTransaction(): Promise<string> {
-    return await this.sendTransactionCmd( [this.coinName, this.address, this.addressTo, this.amountInCrypto.toString()] )
+    return await this.sendTransactionCmd( ["tsx", this.coinName, this.address, this.addressTo, this.amountInCrypto.toString()] )
   }
 
   // ###################################################################################################

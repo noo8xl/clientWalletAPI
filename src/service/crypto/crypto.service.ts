@@ -6,9 +6,7 @@ import { WalletService } from "../wallet/wallet.service";
 import ErrorInterceptor from "../../exceptions/Error.exception";
 
 import { GET_BALANCE_DTO, WALLET_REQUEST_DTO } from "../../dto/crypto/wallet.dto";
-import { Customer } from "../../entity/customer/Customer";
-import { coinList } from "src/config/configs";
-
+import { coinList } from "../../config/configs";
 
 // CryptoService -> CRUD interaction with different blockchains 
 class CryptoService {
@@ -29,6 +27,12 @@ class CryptoService {
     return await this.wt.createWallet()
   }
 
+  // createWallet -> generate wallet in each blockchain 
+  public async createWallet(payload: WALLET_REQUEST_DTO): Promise<any> {
+    await this.initService(payload)
+    return await this.wt.createWallet()
+  }
+
   // getBalance -> get wallet balance by address in the chosen blockchain
   public async getBalance(payload: WALLET_REQUEST_DTO): Promise<GET_BALANCE_DTO> {
     await this.initService(payload)
@@ -36,43 +40,52 @@ class CryptoService {
   }
   
   // sendManualTransaction -> send manual transaction with received data in the chosen blockchain
-  public async sendManualTransaction(payload: WALLET_REQUEST_DTO): Promise<string> {
+  public async sendManualTransaction(payload: WALLET_REQUEST_DTO): Promise<void> {
 
-		let hash: string;
-
-		const msg: string = `
+		let msg: string = `
       You should approve <send transaction> action.
       To approve tsx -> send "Y"
       To reject tsx -> send "N"
       `;
-		let customer: Customer = await this.customerDb.findUserByFilter({id: payload.userId})
-		await this.notificator.sendInfoTelegramMessage(customer.getTelegramId(), msg)
-		// set cache here ->
-		await this.cacheService.setManualTransactionCacheData()
-		return hash;
+
+    try {
+      const chatId: number = await this.customerDb.getCustomerChatId(payload.userId)
+
+      await this.notificator.sendInfoTelegramMessage(chatId, msg)
+      await this.cacheService.setTsxCache(payload.userId, payload)
+
+    } catch (e: any) {
+      throw ErrorInterceptor.ExpectationFailed(e.message)
+    }
   }
 
 	// sendTransactionAutomatically -> send transaction automatically if balance was found
-	public async sendTransactionAutomatically(payload: WALLET_REQUEST_DTO): Promise<void> {
-    const chatId = 0 //  await this.customerDb.getCustomerChatId()
-    const msg = "";
+	public async sendTransactionAutomatically(payload: WALLET_REQUEST_DTO): Promise<string> {
+    
+    let hash: string;
+    let msg = "ur msg will be here";
 
-    await this.initService(payload)
-		await this.wt.sendTransaction()
-    await this.notificator.sendInfoTelegramMessage(chatId, msg)
+    try {
+      const chatId: number = await this.customerDb.getCustomerChatId(payload.userId)
+  
+      await this.initService(payload)
+      await this.wt.sendTransaction()
+      await this.notificator.sendInfoTelegramMessage(chatId, msg)
+
+      return hash
+
+    } catch (e: any) {
+      throw ErrorInterceptor.ExpectationFailed(e.message)
+    }
 	}
 
 	public async approveTransaction(): Promise<string> {
 		// get tsx from cache if available <-
 		let userId: string = ''
-		const c: any  = await this.cacheService.getManualTransactionCachedData(userId)
+		const c: WALLET_REQUEST_DTO  = await this.cacheService.getTsxCache(userId)
 		if (!c) throw ErrorInterceptor.NotFoundError()
-		let payload: WALLET_REQUEST_DTO = {
-			userId: c.userId,
-      coinName: c.coinName,
-			address: c.addressFrom,
-		}
-		await this.initService(payload)
+
+      await this.initService(c)
 		return await this.wt.sendTransaction()
 	}
 
@@ -87,14 +100,13 @@ class CryptoService {
 
 
   private validateCoinName(coin: string): void {
-    for (let i = 0; i < coinList.length; i++) {
+    for (let i = 0; i < coinList.length; i++) 
       if (coin === coinList[i]) return 
-    }
-
+    
     ErrorInterceptor.BadRequest('got wrong coin name')
   }
 
-  // // setWalletInstance -> set wallet instance depends on requested coinName
+  // // setWalletInstance -> set wallet instance depends on recieved coinName
   // private async setWalletInstance(payload: WALLET_REQUEST_DTO): Promise<void> {
   //   switch (payload.coinName) {
   //     case coinList[0]:
