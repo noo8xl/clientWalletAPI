@@ -11,6 +11,11 @@ export const host = process.env.HOST
 export const apiUrl = process.env.API_URL;
 // export const corsOpts: cors.CorsOptions = {....}
 
+export const cmdWallet = {
+  // path: process.env.CMD_PATH,
+  cmd: process.env.CMD_NAME
+}
+
 
 // ============================================================================================================= //
 // ############################################# database keys area ############################################ //
@@ -34,14 +39,6 @@ export const REDIS_STORE = {
   // cert: readFileSync('./redis_user.crt'),
   // ca: [readFileSync('./redis_ca.pem')]
 };
-
-export const MYSQL_DB = {
-  host: process.env.HOST,
-  userName: process.env.MYSQL_DB_USER,
-  userPassword: process.env.MYSQL_DB_PASSWORD,
-  databaseName: process.env.MYSQL_DB_NAME,
-}
-
 
 // ============================================================================================================= //
 // ########################################### notification keys area ########################################## //
@@ -83,13 +80,13 @@ export const CORS_OPTIONS: cors.CorsOptions = {
 // ============================================================================================================= //
 
 
-export const coinList: string[] = [ 'btc', 'eth', 'trx', 'ton', 'sol' ]
+export const coinList: string[] = [ 'btc', 'eth', 'trx', 'ton'] // 'sol' 
 
 export const availableCoins = [
   { coinName: 'btc', coinApiName: 'bitcoin' },
   { coinName: 'eth', coinApiName: 'ethereum' },
   { coinName: 'trx', coinApiName: 'tron' },
-  { coinName: 'ton', mainAddress: 'the-open-network' },
+  { coinName: 'ton', coinApiName: 'the-open-network' },
   { coinName: 'sol', coinApiName: 'solana' },
   // { coinName: 'bch', coinApiName: 'bitcoin-cash' },
   // { coinName: 'usdt', coinApiName: 'tether' },

@@ -9,7 +9,7 @@ export class NotificationTelegram extends TelegramHelper{
 
 	public async sendMessage(message: string, chatId?: number): Promise<void> {
 		!chatId
-			? await super.sendMessage(message)
-			: await super.sendMessage(message, chatId);
+			? await this.sendMessage(message)
+			: await this.sendMessage(message, chatId);
 	}
 }

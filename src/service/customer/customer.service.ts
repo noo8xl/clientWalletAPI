@@ -2,9 +2,7 @@
 import { CustomerDatabaseService } from "../database/customer.db.service";
 import { CacheService } from "../cache/cache.service";
 
-import { ActionLog } from "../../entity/action/ActionLog";
-
-import { GET_ACTIONS_LIST } from "../../types/customer/customer.types";
+import { ACTION, GET_ACTIONS_LIST } from "../../types/action/Action.types";
 
 
 
@@ -42,7 +40,7 @@ class CustomerService {
   }
 
   // getActionsData -> get customer actions data history
-  public async getActionsData(userDto: GET_ACTIONS_LIST): Promise<ActionLog[]> {
+  public async getActionsData(userDto: GET_ACTIONS_LIST): Promise<ACTION[]> {
     return await this.customerDb.getActionHistory(userDto)
   }
 
