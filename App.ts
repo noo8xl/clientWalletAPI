@@ -6,7 +6,7 @@ import http from "node:http";
 import router from "./src/routes/index";
 import { coinList, port, host } from "./src/config/configs";
 // import { ParserService } from './src/service/parser/parser.service'
-import { AuthTelegram } from "./src/service/telegram/auth.telegram";
+// import { AuthTelegram } from "./src/service/telegram/auth.telegram";
 
 const app = express();
 app.use("/static/", express.static(path.join(__dirname, +"./" + "static/")));
@@ -26,9 +26,8 @@ app.use("/wallet-api", router);
 
 // start some services & notification
 const bootstrap = async (): Promise<void> => {
-  // let walletArr = []
-  const authBot = new AuthTelegram();
-  await authBot.messageInterceptor();
+  // const authBot = new AuthTelegram();
+  // await authBot.messageInterceptor();
 
   console.log(`Server is running on http://${host}:${port}/`);
 };

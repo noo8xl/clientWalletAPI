@@ -51,7 +51,7 @@ class CryptoService {
     try {
       const chatId: number = await this.customerDb.getCustomerChatId(payload.userId);
 
-      await this.notificator.sendInfoTelegramMessage(chatId, msg);
+      await this.notificator.sendMessageViaTelegram(msg, chatId);
       await this.cacheService.setTsxCache(payload.userId, payload);
     } catch (e: any) {
       throw ErrorInterceptor.ExpectationFailed(e.message);
@@ -68,7 +68,7 @@ class CryptoService {
 
       await this.initService(payload);
       await this.wt.sendTransaction();
-      await this.notificator.sendInfoTelegramMessage(chatId, msg);
+      await this.notificator.sendMessageViaTelegram(msg, chatId);
 
       return hash;
     } catch (e: any) {

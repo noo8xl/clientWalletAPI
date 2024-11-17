@@ -29,14 +29,16 @@ class AuthService {
     let msg: string = "Welcome to our wallet service! You are successfully registered.";
 
     await this.customerDb.saveNewClient(clientDto);
-    await this.notification.sendInfoTelegramMessage(clientDto.telegramId, msg);
+    // await this.notification.signUpClientToTheApi(clientDto.userEmail, clientDto.domainName);
+    await this.notification.sendMessageViaTelegram(msg, clientDto.telegramId);
   }
 
   // signInClient ->  validate user use cache and api key
   public async signInClient(clientDto: AUTH_CLIENT_DTO): Promise<boolean> {
     let c: string = await this.cacheService.getUserCache(clientDto.apiKey);
     if (!c) {
-      let id: string = await this.customerDb.getCustomerId(clientDto.userEmail);
+      let id: string = await this.customerDb.getCustomerIdByApiKey(clientDto.apiKey);
+      console.log("id -> ", id);
       if (!id) return false;
       await this.cacheService.setUserCache(clientDto.apiKey, id);
     }

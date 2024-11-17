@@ -1,5 +1,5 @@
-import cors from 'cors';
-import { config } from 'dotenv';
+import cors from "cors";
+import { config } from "dotenv";
 config();
 
 // ============================================================================================================= //
@@ -7,15 +7,14 @@ config();
 // ============================================================================================================= //
 
 export const port = process.env.PORT;
-export const host = process.env.HOST
+export const host = process.env.HOST;
 export const apiUrl = process.env.API_URL;
 // export const corsOpts: cors.CorsOptions = {....}
 
 export const cmdWallet = {
   // path: process.env.CMD_PATH,
-  cmd: process.env.CMD_NAME
-}
-
+  cmd: process.env.CMD_NAME,
+};
 
 // ============================================================================================================= //
 // ############################################# database keys area ############################################ //
@@ -26,7 +25,7 @@ export const MONGO_DB = {
   // userName: process.env.MONGO_DB_USER,
   // userPassword: process.env.MONGO_DB_PASSWORD,
   // databaseName: process.env.MONGO_DB_NAME,
-}
+};
 
 export const REDIS_STORE = {
   url: process.env.REDIS_URL,
@@ -44,11 +43,17 @@ export const REDIS_STORE = {
 // ########################################### notification keys area ########################################## //
 // ============================================================================================================= //
 
-export const ERROR_BOT_TOKEN: string | undefined = process.env.ERROR_BOT_TOKEN
-export const NOTIFICATION_BOT_TOKEN: string | undefined = process.env.NOTIFICATION_BOT_TOKEN;
-// export const NOTIDICATION_AND_2FA_BOT_LINK: string | undefined = process.env.TELEGRAM_2FA_CODE_SENDER_LINK
-export const ERR_CHAT_ID: string | undefined = process.env.ERROR_TELEGRAM_CHAT_ID;
-
+export const NOTIFICATION_API = {
+  apiPath: process.env.NOTIFICATION_API_PATH,
+  signUpNewClientPath: "/notification/api/auth/sign-up/", // post request
+  sendMessagePath: "/api/v1/notification/send-user-message/", // post request
+  sendErrorPath: "/api/v1/notification/handle-error/", // get req with msg as param
+  notifBotToken: process.env.NOTIFICATION_BOT_TOKEN,
+  errorBotToken: process.env.ERROR_BOT_TOKEN,
+  authBotToken: process.env.AUTH_BOT_TOKEN,
+  twoStepBotToken: process.env.TWO_STEP_BOT_TOKEN,
+  errorChatId: process.env.ERROR_TELEGRAM_CHAT_ID,
+};
 
 // ============================================================================================================= //
 // ########################################### crypto api keys area ############################################ //
@@ -60,46 +65,46 @@ export const SOL_KEY: string | undefined = process.env.SOLANA_API_KEY;
 
 export const CORS_OPTIONS: cors.CorsOptions = {
   allowedHeaders: [
-    'Origin',
-    'X-Requested-With',
-    'Content-Type',
-    'Accept',
-    'X-Access-Token',
-    'Access-Control-Allow-Origin',
-    'Access-Control-Allow-Credentials',
-    'Authorization',
+    "Origin",
+    "X-Requested-With",
+    "Content-Type",
+    "Accept",
+    "X-Access-Token",
+    "Access-Control-Allow-Origin",
+    "Access-Control-Allow-Credentials",
+    "Authorization",
   ],
   credentials: true,
-  methods: 'GET,PUT,PATCH,POST,DELETE',
+  methods: "GET,PUT,PATCH,POST,DELETE",
   origin: true,
   preflightContinue: false,
-}
+};
 
 // ============================================================================================================= //
 // ############################################## variables area ############################################### //
 // ============================================================================================================= //
 
-
-export const coinList: string[] = [ 'btc', 'eth', 'trx', 'ton'] // 'sol' 
+export const coinList: string[] = ["btc", "eth", "trx", "ton"]; // 'sol'
+export const fiatNameList: string[] = ["AUD", "USD", "EUR", "RUB", "AED"];
 
 export const availableCoins = [
-  { coinName: 'btc', coinApiName: 'bitcoin' },
-  { coinName: 'eth', coinApiName: 'ethereum' },
-  { coinName: 'trx', coinApiName: 'tron' },
-  { coinName: 'ton', coinApiName: 'the-open-network' },
-  { coinName: 'sol', coinApiName: 'solana' },
+  { coinName: "btc", coinApiName: "bitcoin" },
+  { coinName: "eth", coinApiName: "ethereum" },
+  { coinName: "trx", coinApiName: "tron" },
+  { coinName: "ton", coinApiName: "the-open-network" },
+  { coinName: "sol", coinApiName: "solana" },
   // { coinName: 'bch', coinApiName: 'bitcoin-cash' },
   // { coinName: 'usdt', coinApiName: 'tether' },
   // { coinName: 'trx/usdt',coinApiName: 'tron' },
-]
+];
 
 export const OWNER_WALLET_LIST = [
-  { coinName: 'btc', mainAddress: process.env.MAIN_BTC_WALLET },
-  { coinName: 'eth', mainAddress: process.env.MAIN_ETH_WALLET },
-  { coinName: 'trx', mainAddress: process.env.MAIN_TRX_WALLET },
-  { coinName: 'ton', mainAddress: process.env.MAIN_TON_WALLET },
-  { coinName: 'sol', mainAddress: process.env.MAIN_SOL_WALLET },
+  { coinName: "btc", mainAddress: process.env.MAIN_BTC_WALLET },
+  { coinName: "eth", mainAddress: process.env.MAIN_ETH_WALLET },
+  { coinName: "trx", mainAddress: process.env.MAIN_TRX_WALLET },
+  { coinName: "ton", mainAddress: process.env.MAIN_TON_WALLET },
+  { coinName: "sol", mainAddress: process.env.MAIN_SOL_WALLET },
   // { coinName: 'usdt', mainAddress: process.env.MAIN_USDT_WALLET },
   // { coinName: 'bch', mainAddress: process.env.MAIN_BCH_WALLET },
   // { coinName: 'trx/usdt', mainAddress: process.env.MAIN_TRX_USDT_WALLET },
-]
+];

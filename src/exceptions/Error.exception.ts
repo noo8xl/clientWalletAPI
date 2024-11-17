@@ -5,25 +5,21 @@ export default class ErrorInterceptor extends Error {
   message: string;
   status: number;
   errors: string[];
-  static notification: NotificationService;
 
   constructor(status: number, message: string, errors: string[] = []) {
     super(message);
     this.message = message;
     this.status = status;
     this.errors = errors;
-    ErrorInterceptor.notification = new NotificationService();
   }
 
   static async PermissionDenied(action: string): Promise<ErrorInterceptor> {
-    await this.notification.sendErrorMessage(
-      `Catch permission denied error at ${action}.`,
-    );
+    await new NotificationService().sendMessageViaTelegram(`Catch permission denied error at ${action}.`);
     return new ErrorInterceptor(403, "Permission denied.");
   }
 
   static async ServerError(action: string): Promise<ErrorInterceptor> {
-    // await this.notification.sendErrorMessage(`${action} was failed.`)
+    await new NotificationService().sendMessageViaTelegram(`${action} was failed.`);
     console.log("err msg is -> ", action);
     return new ErrorInterceptor(500, "Internal server error.");
   }
